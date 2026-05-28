@@ -1,0 +1,134 @@
+{
+  "realm": "demo",
+  "enabled": true,
+  "sslRequired": "external",
+  "registrationAllowed": false,
+  "loginWithEmailAllowed": true,
+  "duplicateEmailsAllowed": false,
+  "resetPasswordAllowed": true,
+  "roles": {
+    "realm": [
+      {
+        "name": "admin",
+        "description": "Administrator role"
+      },
+      {
+        "name": "manager",
+        "description": "Manager role"
+      },
+      {
+        "name": "user",
+        "description": "Normal user role"
+      }
+    ]
+  },
+  "clients": [
+    {
+      "clientId": "demo-frontend",
+      "name": "Demo Frontend",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "publicClient": true,
+      "standardFlowEnabled": true,
+      "directAccessGrantsEnabled": true,
+      "serviceAccountsEnabled": false,
+      "authorizationServicesEnabled": false,
+      "rootUrl": "http://localhost:5173",
+      "baseUrl": "/",
+      "redirectUris": [
+        "http://localhost:5173/*",
+        "http://localhost:8081/*"
+      ],
+      "webOrigins": [
+        "http://localhost:5173",
+        "http://localhost:8081"
+      ],
+      "fullScopeAllowed": false,
+      "defaultClientScopes": [
+        "profile",
+        "email",
+        "roles"
+      ],
+      "optionalClientScopes": []
+    },
+    {
+      "clientId": "demo-api",
+      "name": "Demo API Resource Server",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "publicClient": false,
+      "clientAuthenticatorType": "client-secret",
+      "secret": "demo-api-secret",
+      "standardFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": true,
+      "authorizationServicesEnabled": true,
+      "fullScopeAllowed": false,
+      "defaultClientScopes": [
+        "profile",
+        "email",
+        "roles"
+      ],
+      "optionalClientScopes": []
+    }
+  ],
+  "users": [
+    {
+      "username": "admin",
+      "enabled": true,
+      "email": "admin@example.com",
+      "firstName": "System",
+      "lastName": "Admin",
+      "emailVerified": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "admin123",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "admin",
+        "manager",
+        "user"
+      ]
+    },
+    {
+      "username": "manager",
+      "enabled": true,
+      "email": "manager@example.com",
+      "firstName": "Department",
+      "lastName": "Manager",
+      "emailVerified": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "manager123",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "manager",
+        "user"
+      ]
+    },
+    {
+      "username": "staff",
+      "enabled": true,
+      "email": "staff@example.com",
+      "firstName": "Normal",
+      "lastName": "Staff",
+      "emailVerified": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "staff123",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "user"
+      ]
+    }
+  ]
+}

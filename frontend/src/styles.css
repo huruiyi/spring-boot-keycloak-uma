@@ -1,0 +1,297 @@
+:root {
+  color: #172033;
+  background: #eef2f7;
+  font-family: Inter, "Segoe UI", Arial, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+}
+
+button {
+  font: inherit;
+}
+
+.app-shell {
+  display: grid;
+  grid-template-columns: 236px minmax(0, 1fr);
+  min-height: 100vh;
+}
+
+.sidebar {
+  background: #152033;
+  color: #fff;
+  padding: 20px 14px;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 10px 24px;
+}
+
+.brand strong,
+.brand span {
+  display: block;
+}
+
+.brand span {
+  color: #a9b4c7;
+  font-size: 13px;
+  margin-top: 2px;
+}
+
+.nav {
+  display: grid;
+  gap: 6px;
+}
+
+.nav a {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #cbd5e1;
+  text-decoration: none;
+  padding: 10px 12px;
+  border-radius: 6px;
+}
+
+.nav a.active,
+.nav a:hover {
+  background: #263650;
+  color: #fff;
+}
+
+.nav-placeholder {
+  color: #a9b4c7;
+  font-size: 14px;
+  padding: 10px 12px;
+}
+
+.main {
+  min-width: 0;
+  padding: 24px;
+}
+
+.topbar,
+.toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+}
+
+.topbar {
+  margin-bottom: 24px;
+}
+
+.topbar h1,
+.toolbar h2 {
+  margin: 0;
+}
+
+.topbar p,
+.toolbar span {
+  margin: 4px 0 0;
+  color: #64748b;
+  font-size: 14px;
+}
+
+.user-box,
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.cache-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid #cbd5e1;
+  border-radius: 999px;
+  background: #fff;
+  color: #475569;
+  cursor: pointer;
+  min-height: 36px;
+  padding: 0 11px;
+}
+
+.cache-toggle strong {
+  min-width: 32px;
+  border-radius: 999px;
+  background: #e2e8f0;
+  color: #334155;
+  font-size: 12px;
+  padding: 3px 7px;
+  text-align: center;
+}
+
+.cache-toggle.enabled {
+  border-color: #93c5fd;
+  color: #1d4ed8;
+}
+
+.cache-toggle.enabled strong {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.icon-button,
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 0;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.icon-button {
+  width: 36px;
+  height: 36px;
+  color: #172033;
+  background: #fff;
+}
+
+.button {
+  min-height: 38px;
+  padding: 0 14px;
+  background: #2563eb;
+  color: #fff;
+}
+
+.button.secondary {
+  background: #475569;
+}
+
+.button.success {
+  background: #15803d;
+}
+
+.button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.table-panel,
+.details {
+  margin-top: 16px;
+  background: #fff;
+  border: 1px solid #d9e1ec;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th,
+td {
+  padding: 13px 16px;
+  border-bottom: 1px solid #e5eaf2;
+  text-align: left;
+}
+
+th {
+  color: #526070;
+  font-size: 13px;
+  background: #f8fafc;
+}
+
+.status {
+  display: inline-flex;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: #e0f2fe;
+  color: #075985;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.notice {
+  margin: 12px 0 0;
+  font-size: 14px;
+}
+
+.permission-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.permission-strip span {
+  border: 1px solid #cbd5e1;
+  border-radius: 999px;
+  color: #64748b;
+  font-size: 12px;
+  padding: 4px 9px;
+}
+
+.permission-strip span.enabled {
+  border-color: #86efac;
+  background: #dcfce7;
+  color: #166534;
+}
+
+.empty-state {
+  margin-top: 16px;
+  border: 1px dashed #cbd5e1;
+  border-radius: 8px;
+  background: #fff;
+  color: #64748b;
+  padding: 18px;
+}
+
+.success-text {
+  color: #15803d;
+}
+
+.error-text {
+  color: #b91c1c;
+}
+
+.details {
+  padding: 18px;
+}
+
+dl {
+  display: grid;
+  grid-template-columns: 180px minmax(0, 1fr);
+  margin: 0;
+  gap: 12px;
+}
+
+dt {
+  color: #64748b;
+}
+
+dd {
+  margin: 0;
+  font-weight: 600;
+}
+
+@media (max-width: 760px) {
+  .app-shell {
+    grid-template-columns: 1fr;
+  }
+
+  .sidebar {
+    position: static;
+  }
+
+  .topbar,
+  .toolbar {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
