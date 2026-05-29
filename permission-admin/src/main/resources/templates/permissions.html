@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>Permission 维护</title>
+  <link rel="stylesheet" th:href="@{/assets/admin.css}">
+</head>
+<body>
+<div class="shell">
+  <aside th:replace="~{fragments :: sidebar}"></aside>
+  <main class="main">
+    <div class="page-title"><h1>Permission 维护</h1></div>
+    <p class="notice" th:if="${message}" th:text="${message}"></p>
+    <div class="split">
+      <section class="panel">
+        <table>
+          <thead><tr><th>Permission</th><th>Resource</th><th>Scope</th><th>Policy</th><th>申请格式</th><th>操作</th></tr></thead>
+          <tbody>
+          <tr th:each="permission : ${model.permissions}">
+            <td th:text="${permission.name()}"></td>
+            <td th:text="${permission.resource()}"></td>
+            <td th:text="${permission.scope()}"></td>
+            <td th:text="${permission.policy()}"></td>
+            <td><span class="tag" th:text="${permission.resource() + '#' + permission.scope()}"></span></td>
+            <td>
+              <form class="inline-form" th:action="@{/permissions/delete}" method="post">
+                <input type="hidden" name="name" th:value="${permission.name()}">
+                <button class="button danger" type="submit">删除</button>
+              </form>
+            </td>
+          </tr>
+          </tbody>
+        </table>
+      </section>
+      <section class="panel">
+        <h2>新增或覆盖 Permission</h2>
+        <form class="form" th:action="@{/permissions}" th:object="${form}" method="post">
+          <div class="field"><label>名称</label><input th:field="*{name}" placeholder="perm-report-view"></div>
+          <div class="field"><label>Resource</label><input th:field="*{resource}" placeholder="report"></div>
+          <div class="field"><label>Scope</label><input th:field="*{scope}" placeholder="view"></div>
+          <div class="field"><label>Policy</label><input th:field="*{policy}" placeholder="policy-manager"></div>
+          <button class="button" type="submit">保存</button>
+        </form>
+      </section>
+    </div>
+  </main>
+</div>
+</body>
+</html>

@@ -9,5 +9,7 @@ frontend/node_modules/
 frontend/dist/
 frontend/.env.*.local
 backend/target/
+permission-admin/target/
+permission-admin/data/
 /.arts
 /.codeartsdoer

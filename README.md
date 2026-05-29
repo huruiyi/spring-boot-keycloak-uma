@@ -1039,3 +1039,35 @@ VITE_API_BASE_URL=http://localhost:9000
 - 策略维护
 - UMA 资源维护
 - 系统权限变更维护
+## 权限管理后台
+
+仓库新增独立的 Spring Boot + Thymeleaf 后台系统 `permission-admin`，用于维护用户、Realm Role、UMA Resource、Policy、Permission 和系统接口权限映射。它和业务后端 `backend` 分离，默认端口是 `9100`。
+
+启动：
+
+```powershell
+.\startup\run-permission-admin.ps1
+```
+
+访问：
+
+```text
+http://localhost:9100
+```
+
+默认账号：
+
+```text
+admin / admin
+```
+
+可通过环境变量覆盖：
+
+```text
+PERMISSION_ADMIN_USERNAME
+PERMISSION_ADMIN_PASSWORD
+PERMISSION_ADMIN_PORT
+PERMISSION_ADMIN_DATA_FILE
+```
+
+当前版本使用本地 JSON 文件持久化，默认路径是 `permission-admin/data/permission-model.json`。该文件是运行数据，不提交到 git。后续如果要直接同步 Keycloak，可以在 `permission-admin` 中替换 repository 或新增 Keycloak Admin REST 同步服务。

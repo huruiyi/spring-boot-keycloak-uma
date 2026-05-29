@@ -1,0 +1,20 @@
+server:
+  port: ${PERMISSION_ADMIN_PORT:9100}
+
+spring:
+  application:
+    name: permission-admin
+  thymeleaf:
+    cache: false
+
+app:
+  data-file: ${PERMISSION_ADMIN_DATA_FILE:data/permission-model.json}
+  security:
+    username: ${PERMISSION_ADMIN_USERNAME:admin}
+    password: ${PERMISSION_ADMIN_PASSWORD:admin}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
