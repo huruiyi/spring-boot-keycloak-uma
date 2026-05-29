@@ -20,7 +20,8 @@
             <td th:text="${resource.name()}"></td>
             <td><div th:each="uri : ${resource.uris()}" th:text="${uri}"></div></td>
             <td><span class="tag" th:each="scope : ${resource.scopes()}" th:text="${scope}"></span></td>
-            <td>
+            <td class="actions">
+              <a class="button secondary" th:href="@{/resources(name=${resource.name()})}">编辑</a>
               <form class="inline-form" th:action="@{/resources/delete}" method="post">
                 <input type="hidden" name="name" th:value="${resource.name()}">
                 <button class="button danger" type="submit">删除</button>
@@ -31,12 +32,16 @@
         </table>
       </section>
       <section class="panel">
-        <h2>新增或覆盖资源</h2>
+        <h2 th:text="${editing} ? '编辑资源' : '新增资源'">新增资源</h2>
         <form class="form" th:action="@{/resources}" th:object="${form}" method="post">
-          <div class="field"><label>资源名</label><input th:field="*{name}" placeholder="report"></div>
+          <input type="hidden" th:field="*{originalName}">
+          <div class="field"><label>资源名</label><input th:field="*{name}" th:readonly="${editing}" placeholder="report"></div>
           <div class="field"><label>URI，逗号分隔</label><input th:field="*{uris}" placeholder="/api/reports/*"></div>
           <div class="field"><label>Scope，逗号分隔</label><input th:field="*{scopes}" placeholder="view,export"></div>
-          <button class="button" type="submit">保存</button>
+          <div class="actions">
+            <button class="button" type="submit">保存</button>
+            <a class="button secondary" th:if="${editing}" th:href="@{/resources}">取消</a>
+          </div>
         </form>
       </section>
     </div>

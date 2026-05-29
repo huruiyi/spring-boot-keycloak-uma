@@ -10,8 +10,25 @@ import com.example.umaadmin.model.UmaResourceModel;
 import com.example.umaadmin.model.UserModel;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Objects;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
 @Service
 public class PermissionAdminService {
+
+  private static final Map<String, String> DEFAULT_METHODS = Map.of(
+      "view", "GET",
+      "create", "POST",
+      "edit", "PUT",
+      "delete", "DELETE",
+      "approve", "POST",
+      "export", "GET",
+      "reset_pwd", "POST"
+  );
 
   private final PermissionModelRepository repository;
 
@@ -50,8 +67,13 @@ public class PermissionAdminService {
   }
 
   public void addResource(UmaResourceModel resource) {
+    saveResource(resource.name(), resource);
+  }
+
+  public void saveResource(String originalName, UmaResourceModel resource) {
     PermissionModel model = repository.get();
-    model.getResources().removeIf(item -> item.name().equals(resource.name()));
+    String normalizedOriginalName = originalName == null || originalName.isBlank() ? resource.name() : originalName;
+    model.getResources().removeIf(item -> item.name().equals(normalizedOriginalName) || item.name().equals(resource.name()));
     model.getResources().add(resource);
     repository.save(model);
   }
@@ -99,5 +121,103 @@ public class PermissionAdminService {
     PermissionModel model = repository.get();
     model.getEndpoints().removeIf(item -> item.method().equals(method) && item.path().equals(path));
     repository.save(model);
+  }
+
+  public int generateDefaultEndpoints() {
+    PermissionModel model = repository.get();
+    model.setEndpoints(new ArrayList<>(model.getEndpoints()));
+    Map<String, UmaResourceModel> resourcesByName = model.getResources().stream()
+        .collect(Collectors.toMap(UmaResourceModel::name, Function.identity(), (left, right) -> left));
+
+    int generated = 0;
+    for (DefaultEndpointCandidate candidate : defaultEndpointCandidates(model, resourcesByName).values()) {
+      if (hasEndpointForPermission(model, candidate.permission())) {
+        continue;
+      }
+      if (hasEndpointForMethodAndPath(model, candidate.method(), candidate.path())) {
+        continue;
+      }
+
+      model.getEndpoints().add(new SystemEndpointModel(
+          candidate.name(),
+          candidate.method(),
+          candidate.path(),
+          candidate.permission()
+      ));
+      generated++;
+    }
+
+    if (generated > 0) {
+      repository.save(model);
+    }
+    return generated;
+  }
+
+  private Map<String, DefaultEndpointCandidate> defaultEndpointCandidates(PermissionModel model, Map<String, UmaResourceModel> resourcesByName) {
+    Map<String, DefaultEndpointCandidate> candidates = new java.util.LinkedHashMap<>();
+    for (PermissionRuleModel permission : model.getPermissions()) {
+      if (permission.resource().isBlank() || permission.scope().isBlank()) {
+        continue;
+      }
+      UmaResourceModel resource = resourcesByName.get(permission.resource());
+      if (resource == null || resource.uris().isEmpty()) {
+        continue;
+      }
+      putCandidate(candidates, permission.resource(), permission.scope(), resource.uris().getFirst());
+    }
+    for (UmaResourceModel resource : model.getResources()) {
+      if (resource.uris().isEmpty()) {
+        continue;
+      }
+      for (String scope : resource.scopes()) {
+        putCandidate(candidates, resource.name(), scope, resource.uris().getFirst());
+      }
+    }
+    return candidates;
+  }
+
+  private void putCandidate(Map<String, DefaultEndpointCandidate> candidates, String resource, String scope, String uri) {
+    String permission = resource + "#" + scope;
+    candidates.putIfAbsent(permission, new DefaultEndpointCandidate(
+        resource + " " + scope,
+        defaultMethod(scope),
+        defaultPath(uri, scope),
+        permission
+    ));
+  }
+
+  private boolean hasEndpointForPermission(PermissionModel model, String permission) {
+    return model.getEndpoints().stream()
+        .map(SystemEndpointModel::permission)
+        .filter(Objects::nonNull)
+        .anyMatch(permission::equals);
+  }
+
+  private boolean hasEndpointForMethodAndPath(PermissionModel model, String method, String path) {
+    return model.getEndpoints().stream()
+        .anyMatch(endpoint -> endpoint.method().equals(method) && endpoint.path().equals(path));
+  }
+
+  private String defaultMethod(String scope) {
+    return DEFAULT_METHODS.getOrDefault(scope.toLowerCase(Locale.ROOT), "GET");
+  }
+
+  private String defaultPath(String uri, String scope) {
+    String basePath = uri.endsWith("/*") ? uri.substring(0, uri.length() - 2) : uri;
+    if (isResourceLevelScope(scope)) {
+      return basePath;
+    }
+    return basePath + "/" + scope.toLowerCase(Locale.ROOT).replace('_', '-');
+  }
+
+  private boolean isResourceLevelScope(String scope) {
+    String normalizedScope = scope.toLowerCase(Locale.ROOT);
+    return "view".equals(normalizedScope)
+        || "create".equals(normalizedScope)
+        || "edit".equals(normalizedScope)
+        || "delete".equals(normalizedScope);
+  }
+
+  private record DefaultEndpointCandidate(String name, String method, String path, String permission) {
   }
 }

@@ -4,10 +4,19 @@ import jakarta.validation.constraints.NotBlank;
 
 public class ResourceForm {
 
+  private String originalName;
   @NotBlank
   private String name;
   private String uris;
   private String scopes;
+
+  public String getOriginalName() {
+    return originalName;
+  }
+
+  public void setOriginalName(String originalName) {
+    this.originalName = originalName;
+  }
 
   public String getName() {
     return name;

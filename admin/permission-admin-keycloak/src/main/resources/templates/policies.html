@@ -21,7 +21,8 @@
             <td th:text="${policy.type()}"></td>
             <td th:text="${policy.realmRole()}"></td>
             <td th:text="${policy.description()}"></td>
-            <td>
+            <td class="actions">
+              <a class="button secondary" th:href="@{/policies(name=${policy.name()})}">编辑</a>
               <form class="inline-form" th:action="@{/policies/delete}" method="post">
                 <input type="hidden" name="name" th:value="${policy.name()}">
                 <button class="button danger" type="submit">删除</button>
@@ -32,13 +33,16 @@
         </table>
       </section>
       <section class="panel">
-        <h2>新增或覆盖策略</h2>
+        <h2 th:text="${editing} ? '编辑策略' : '新增策略'">新增策略</h2>
         <form class="form" th:action="@{/policies}" th:object="${form}" method="post">
-          <div class="field"><label>策略名</label><input th:field="*{name}" placeholder="policy-auditor"></div>
+          <div class="field"><label>策略名</label><input th:field="*{name}" th:readonly="${editing}" placeholder="policy-auditor"></div>
           <div class="field"><label>类型</label><input th:field="*{type}" value="role"></div>
           <div class="field"><label>Realm Role</label><input th:field="*{realmRole}" placeholder="auditor"></div>
           <div class="field"><label>说明</label><input th:field="*{description}" placeholder="审计员策略"></div>
-          <button class="button" type="submit">保存</button>
+          <div class="actions">
+            <button class="button" type="submit">保存</button>
+            <a class="button secondary" th:if="${editing}" th:href="@{/policies}">取消</a>
+          </div>
         </form>
       </section>
     </div>

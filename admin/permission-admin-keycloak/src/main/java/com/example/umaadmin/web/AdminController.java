@@ -119,9 +119,24 @@ public class AdminController {
   }
 
   @GetMapping("/resources")
-  public String resources(Model model) {
-    model.addAttribute("model", service.model());
-    model.addAttribute("form", new ResourceForm());
+  public String resources(@RequestParam(required = false) String name, Model model) {
+    PermissionModel permissionModel = service.model();
+    ResourceForm form = new ResourceForm();
+    boolean editing = name != null && !name.isBlank();
+    if (editing) {
+      permissionModel.getResources().stream()
+          .filter(resource -> resource.name().equals(name))
+          .findFirst()
+          .ifPresent(resource -> {
+            form.setOriginalName(resource.name());
+            form.setName(resource.name());
+            form.setUris(String.join(",", resource.uris()));
+            form.setScopes(String.join(",", resource.scopes()));
+          });
+    }
+    model.addAttribute("model", permissionModel);
+    model.addAttribute("form", form);
+    model.addAttribute("editing", editing);
     return "resources";
   }
 
@@ -129,9 +144,13 @@ public class AdminController {
   public String addResource(@Valid @ModelAttribute("form") ResourceForm form, BindingResult bindingResult, Model model, RedirectAttributes redirectAttributes) {
     if (bindingResult.hasErrors()) {
       model.addAttribute("model", service.model());
+      model.addAttribute("editing", form.getOriginalName() != null && !form.getOriginalName().isBlank());
       return "resources";
     }
-    service.addResource(new UmaResourceModel(form.getName(), FormSupport.splitCsv(form.getUris()), FormSupport.splitCsv(form.getScopes())));
+    service.saveResource(
+        form.getOriginalName(),
+        new UmaResourceModel(form.getName(), FormSupport.splitCsv(form.getUris()), FormSupport.splitCsv(form.getScopes()))
+    );
     redirectAttributes.addFlashAttribute("message", "UMA Resource 已保存");
     return "redirect:/resources";
   }
@@ -144,9 +163,24 @@ public class AdminController {
   }
 
   @GetMapping("/policies")
-  public String policies(Model model) {
-    model.addAttribute("model", service.model());
-    model.addAttribute("form", new PolicyForm());
+  public String policies(@RequestParam(required = false) String name, Model model) {
+    PermissionModel permissionModel = service.model();
+    PolicyForm form = new PolicyForm();
+    boolean editing = name != null && !name.isBlank();
+    if (editing) {
+      permissionModel.getPolicies().stream()
+          .filter(policy -> policy.name().equals(name))
+          .findFirst()
+          .ifPresent(policy -> {
+            form.setName(policy.name());
+            form.setType(policy.type());
+            form.setRealmRole(policy.realmRole());
+            form.setDescription(policy.description());
+          });
+    }
+    model.addAttribute("model", permissionModel);
+    model.addAttribute("form", form);
+    model.addAttribute("editing", editing);
     return "policies";
   }
 
@@ -154,6 +188,7 @@ public class AdminController {
   public String addPolicy(@Valid @ModelAttribute("form") PolicyForm form, BindingResult bindingResult, Model model, RedirectAttributes redirectAttributes) {
     if (bindingResult.hasErrors()) {
       model.addAttribute("model", service.model());
+      model.addAttribute("editing", form.getName() != null && !form.getName().isBlank());
       return "policies";
     }
     service.addPolicy(new PolicyModel(form.getName(), form.getType(), form.getRealmRole(), form.getDescription()));
@@ -169,9 +204,24 @@ public class AdminController {
   }
 
   @GetMapping("/permissions")
-  public String permissions(Model model) {
-    model.addAttribute("model", service.model());
-    model.addAttribute("form", new PermissionForm());
+  public String permissions(@RequestParam(required = false) String name, Model model) {
+    PermissionModel permissionModel = service.model();
+    PermissionForm form = new PermissionForm();
+    boolean editing = name != null && !name.isBlank();
+    if (editing) {
+      permissionModel.getPermissions().stream()
+          .filter(permission -> permission.name().equals(name))
+          .findFirst()
+          .ifPresent(permission -> {
+            form.setName(permission.name());
+            form.setResource(permission.resource());
+            form.setScope(permission.scope());
+            form.setPolicy(permission.policy());
+          });
+    }
+    model.addAttribute("model", permissionModel);
+    model.addAttribute("form", form);
+    model.addAttribute("editing", editing);
     return "permissions";
   }
 
@@ -179,6 +229,7 @@ public class AdminController {
   public String addPermission(@Valid @ModelAttribute("form") PermissionForm form, BindingResult bindingResult, Model model, RedirectAttributes redirectAttributes) {
     if (bindingResult.hasErrors()) {
       model.addAttribute("model", service.model());
+      model.addAttribute("editing", form.getName() != null && !form.getName().isBlank());
       return "permissions";
     }
     service.addPermission(new PermissionRuleModel(form.getName(), form.getResource(), form.getScope(), form.getPolicy()));
@@ -215,6 +266,13 @@ public class AdminController {
   public String deleteEndpoint(@RequestParam String method, @RequestParam String path, RedirectAttributes redirectAttributes) {
     service.deleteEndpoint(method, path);
     redirectAttributes.addFlashAttribute("message", "接口权限已删除");
+    return "redirect:/endpoints";
+  }
+
+  @PostMapping("/endpoints/generate-defaults")
+  public String generateDefaultEndpoints(RedirectAttributes redirectAttributes) {
+    int generated = service.generateDefaultEndpoints();
+    redirectAttributes.addFlashAttribute("message", "Generated " + generated + " default endpoint permissions");
     return "redirect:/endpoints";
   }
 }

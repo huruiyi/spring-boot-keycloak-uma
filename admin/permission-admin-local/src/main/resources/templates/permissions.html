@@ -22,7 +22,8 @@
             <td th:text="${permission.scope()}"></td>
             <td th:text="${permission.policy()}"></td>
             <td><span class="tag" th:text="${permission.resource() + '#' + permission.scope()}"></span></td>
-            <td>
+            <td class="actions">
+              <a class="button secondary" th:href="@{/permissions(name=${permission.name()})}">编辑</a>
               <form class="inline-form" th:action="@{/permissions/delete}" method="post">
                 <input type="hidden" name="name" th:value="${permission.name()}">
                 <button class="button danger" type="submit">删除</button>
@@ -33,13 +34,16 @@
         </table>
       </section>
       <section class="panel">
-        <h2>新增或覆盖 Permission</h2>
+        <h2 th:text="${editing} ? '编辑 Permission' : '新增 Permission'">新增 Permission</h2>
         <form class="form" th:action="@{/permissions}" th:object="${form}" method="post">
-          <div class="field"><label>名称</label><input th:field="*{name}" placeholder="perm-report-view"></div>
+          <div class="field"><label>名称</label><input th:field="*{name}" th:readonly="${editing}" placeholder="perm-report-view"></div>
           <div class="field"><label>Resource</label><input th:field="*{resource}" placeholder="report"></div>
           <div class="field"><label>Scope</label><input th:field="*{scope}" placeholder="view"></div>
           <div class="field"><label>Policy</label><input th:field="*{policy}" placeholder="policy-manager"></div>
-          <button class="button" type="submit">保存</button>
+          <div class="actions">
+            <button class="button" type="submit">保存</button>
+            <a class="button secondary" th:if="${editing}" th:href="@{/permissions}">取消</a>
+          </div>
         </form>
       </section>
     </div>
