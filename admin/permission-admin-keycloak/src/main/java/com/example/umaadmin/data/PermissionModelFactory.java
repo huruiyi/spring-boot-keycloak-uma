@@ -21,7 +21,7 @@ public final class PermissionModelFactory {
     model.setRealmRoles(List.of(
         new RealmRoleModel("user", "普通用户"),
         new RealmRoleModel("manager", "管理人员"),
-        new RealmRoleModel("admin", "管理员")
+        new RealmRoleModel("admin", "系统管理员")
     ));
     model.setUsers(List.of(
         new UserModel("staff", "staff@example.com", "staff123", List.of("user")),
@@ -30,7 +30,7 @@ public final class PermissionModelFactory {
     ));
     model.setClients(List.of(
         new ClientModel("demo-frontend", "public", "前端登录和按需申请 RPT", List.of("profile", "email", "roles"), List.of("admin", "manager", "user")),
-        new ClientModel("demo-api", "confidential-resource-server", "UMA Resource Server", List.of("profile", "email", "roles"), List.of())
+        new ClientModel("demo-api", "confidential-resource-server", "UMA 资源服务器", List.of("profile", "email", "roles"), List.of())
     ));
     model.setResources(List.of(
         new UmaResourceModel("order", List.of("/api/orders/*"), List.of("view", "create", "edit", "delete", "approve", "export")),
