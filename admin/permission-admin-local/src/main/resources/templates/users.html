@@ -36,7 +36,12 @@
           <div class="field"><label>用户名</label><input th:field="*{username}" placeholder="auditor"></div>
           <div class="field"><label>邮箱</label><input th:field="*{email}" placeholder="auditor@example.com"></div>
           <div class="field"><label>密码</label><input th:field="*{password}" placeholder="auditor123"></div>
-          <div class="field"><label>Realm Role，逗号分隔</label><input th:field="*{realmRoles}" placeholder="manager,user"></div>
+          <div class="field">
+            <label>Realm Role</label>
+            <select class="multi-select" th:field="*{realmRoles}" multiple>
+              <option th:each="role : ${model.realmRoles}" th:value="${role.name()}" th:text="${role.name()}"></option>
+            </select>
+          </div>
           <button class="button" type="submit">保存</button>
         </form>
       </section>

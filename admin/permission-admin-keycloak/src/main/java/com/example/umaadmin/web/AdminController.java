@@ -216,7 +216,7 @@ public class AdminController {
             form.setName(permission.name());
             form.setResource(permission.resource());
             form.setScope(permission.scope());
-            form.setPolicy(permission.policy());
+            form.setPolicies(permission.policies());
           });
     }
     model.addAttribute("model", permissionModel);
@@ -232,7 +232,7 @@ public class AdminController {
       model.addAttribute("editing", form.getName() != null && !form.getName().isBlank());
       return "permissions";
     }
-    service.addPermission(new PermissionRuleModel(form.getName(), form.getResource(), form.getScope(), form.getPolicy()));
+    service.addPermission(new PermissionRuleModel(form.getName(), form.getResource(), form.getScope(), form.getPolicies()));
     redirectAttributes.addFlashAttribute("message", "权限规则已保存");
     return "redirect:/permissions";
   }

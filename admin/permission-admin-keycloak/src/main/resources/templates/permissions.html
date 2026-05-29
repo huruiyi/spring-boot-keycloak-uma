@@ -20,7 +20,7 @@
             <td th:text="${permission.name()}"></td>
             <td th:text="${permission.resource()}"></td>
             <td th:text="${permission.scope()}"></td>
-            <td th:text="${permission.policy()}"></td>
+            <td><span class="tag" th:each="policy : ${permission.policies()}" th:text="${policy}"></span></td>
             <td><span class="tag" th:text="${permission.resource() + '#' + permission.scope()}"></span></td>
             <td class="actions">
               <a class="button secondary" th:href="@{/permissions(name=${permission.name()})}">编辑</a>
@@ -37,9 +37,28 @@
         <h2 th:text="${editing} ? '编辑 Permission' : '新增 Permission'">新增 Permission</h2>
         <form class="form" th:action="@{/permissions}" th:object="${form}" method="post">
           <div class="field"><label>名称</label><input th:field="*{name}" th:readonly="${editing}" placeholder="perm-report-view"></div>
-          <div class="field"><label>Resource</label><input th:field="*{resource}" placeholder="report"></div>
-          <div class="field"><label>Scope</label><input th:field="*{scope}" placeholder="view"></div>
-          <div class="field"><label>Policy</label><input th:field="*{policy}" placeholder="policy-manager"></div>
+          <div class="field">
+            <label>Resource</label>
+            <select th:field="*{resource}">
+              <option value="">请选择 Resource</option>
+              <option th:each="resource : ${model.resources}" th:value="${resource.name()}" th:text="${resource.name()}"></option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Scope</label>
+            <select th:field="*{scope}">
+              <option value="">请选择 Scope</option>
+              <optgroup th:each="resource : ${model.resources}" th:label="${resource.name()}">
+                <option th:each="scope : ${resource.scopes()}" th:value="${scope}" th:text="${scope}"></option>
+              </optgroup>
+            </select>
+          </div>
+          <div class="field">
+            <label>Policy</label>
+            <select class="multi-select" th:field="*{policies}" multiple>
+              <option th:each="policy : ${model.policies}" th:value="${policy.name()}" th:text="${policy.name()}"></option>
+            </select>
+          </div>
           <div class="actions">
             <button class="button" type="submit">保存</button>
             <a class="button secondary" th:if="${editing}" th:href="@{/permissions}">取消</a>

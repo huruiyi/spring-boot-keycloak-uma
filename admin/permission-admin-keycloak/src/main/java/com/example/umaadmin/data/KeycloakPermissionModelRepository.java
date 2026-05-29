@@ -214,15 +214,36 @@ public class KeycloakPermissionModelRepository implements PermissionModelReposit
   }
 
   private List<PermissionRuleModel> loadPermissions(String authzBase, String token) {
+    Map<String, String> resourceIdToName = idToName(getList(authzBase + "/resource", token));
+    Map<String, String> scopeIdToName = idToName(getList(authzBase + "/scope", token));
+    Map<String, String> policyIdToName = idToName(getList(authzBase + "/policy", token));
     return getList(authzBase + "/permission").stream()
         .filter(permission -> "scope".equals(text(permission, "type")))
         .map(permission -> {
-          Map<String, String> config = config(permission);
+          String permissionId = keycloakId(permission);
+          Map<String, Object> detail = getMap(authzBase + "/policy/" + permissionId, token);
+          Map<String, String> config = config(detail);
+          List<String> resources = firstNonEmpty(
+              configuredValues(detail, config, "resources"),
+              objectNameList(getList(authzBase + "/policy/" + permissionId + "/resources", token))
+          );
+          List<String> scopes = firstNonEmpty(
+              configuredValues(detail, config, "scopes"),
+              objectNameList(getList(authzBase + "/policy/" + permissionId + "/scopes", token))
+          );
+          List<String> policies = firstNonEmpty(
+              configuredValues(detail, config, "policies"),
+              configuredValues(detail, config, "applyPolicies")
+          );
+          policies = firstNonEmpty(
+              policies,
+              objectNameList(getList(authzBase + "/permission/" + permissionId + "/associatedPolicies", token))
+          );
           return new PermissionRuleModel(
-              text(permission, "name"),
-              firstConfiguredValue(permission, config, "resources"),
-              firstConfiguredValue(permission, config, "scopes"),
-              firstConfiguredValue(permission, config, "policies")
+              text(detail, "name"),
+              resolveFirst(resources, resourceIdToName),
+              resolveFirst(scopes, scopeIdToName),
+              resolveAll(policies, policyIdToName)
           );
         })
         .toList();
@@ -430,7 +451,7 @@ public class KeycloakPermissionModelRepository implements PermissionModelReposit
         "decisionStrategy", "UNANIMOUS",
         "resources", List.of(permission.resource()),
         "scopes", List.of(permission.scope()),
-        "policies", List.of(permission.policy())
+        "policies", permission.policies()
     ));
   }
 
@@ -445,7 +466,7 @@ public class KeycloakPermissionModelRepository implements PermissionModelReposit
     return Objects.equals(left.name(), right.name())
         && Objects.equals(left.resource(), right.resource())
         && Objects.equals(left.scope(), right.scope())
-        && Objects.equals(left.policy(), right.policy());
+        && Objects.equals(left.policies(), right.policies());
   }
 
   private void syncEndpoints(PermissionModel model, String clientUuid, String token) {
@@ -676,24 +697,60 @@ public class KeycloakPermissionModelRepository implements PermissionModelReposit
     return "";
   }
 
-  private String firstConfiguredValue(Map<String, Object> item, Map<String, String> config, String field) {
+  private List<String> configuredValues(Map<String, Object> item, Map<String, String> config, String field) {
     List<String> directValues = objectNameList(item.get(field));
     if (!directValues.isEmpty()) {
-      return directValues.getFirst();
+      return directValues;
     }
     String configured = config.get(field);
     if (configured == null || configured.isBlank()) {
-      return "";
+      return List.of();
     }
     try {
       JsonNode node = objectMapper.readTree(configured);
       if (node.isArray() && !node.isEmpty()) {
-        return node.get(0).asText();
+        List<String> values = new ArrayList<>();
+        for (JsonNode value : node) {
+          String text = value.isObject() ? value.path("name").asText(value.path("id").asText()) : value.asText();
+          if (!text.isBlank()) {
+            values.add(text);
+          }
+        }
+        return values;
       }
     } catch (JsonProcessingException ignored) {
-      return configured;
+      return List.of(configured);
     }
-    return "";
+    return List.of();
+  }
+
+  private Map<String, String> idToName(List<Map<String, Object>> items) {
+    Map<String, String> result = new LinkedHashMap<>();
+    for (Map<String, Object> item : items) {
+      String name = text(item, "name");
+      if (!name.isBlank()) {
+        result.put(keycloakId(item), name);
+        result.put(name, name);
+      }
+    }
+    return result;
+  }
+
+  private String resolveFirst(List<String> values, Map<String, String> idToName) {
+    List<String> resolved = resolveAll(values, idToName);
+    return resolved.isEmpty() ? "" : resolved.getFirst();
+  }
+
+  private List<String> resolveAll(List<String> values, Map<String, String> idToName) {
+    return values.stream()
+        .map(value -> idToName.getOrDefault(value, value))
+        .filter(value -> !value.isBlank())
+        .distinct()
+        .toList();
+  }
+
+  private List<String> firstNonEmpty(List<String> left, List<String> right) {
+    return left.isEmpty() ? right : left;
   }
 
   private Map<String, String> config(Map<String, Object> item) {
@@ -728,11 +785,19 @@ public class KeycloakPermissionModelRepository implements PermissionModelReposit
     }
     if (value instanceof List<?> list) {
       return list.stream()
-          .map(item -> item instanceof Map<?, ?> map ? Objects.toString(map.get("name"), "") : Objects.toString(item, ""))
+          .map(item -> item instanceof Map<?, ?> map ? namedObjectValue(map) : Objects.toString(item, ""))
           .filter(item -> !item.isBlank())
           .toList();
     }
     return List.of(Objects.toString(value)).stream().filter(item -> !item.isBlank()).toList();
+  }
+
+  private String namedObjectValue(Map<?, ?> map) {
+    String name = Objects.toString(map.get("name"), "");
+    if (!name.isBlank()) {
+      return name;
+    }
+    return Objects.toString(map.get("id"), "");
   }
 
   private List<String> stringList(Object value) {

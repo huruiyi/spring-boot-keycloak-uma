@@ -8,6 +8,26 @@ param(
 
 $ErrorActionPreference = "Stop"
 
+function ConvertTo-Array {
+    param([object]$Value)
+
+    if ($null -eq $Value) {
+        return ,@()
+    }
+
+    return ,@($Value)
+}
+
+function Get-PermissionPolicies {
+    param([object]$Permission)
+
+    $values = ConvertTo-Array $Permission.policies
+    if ($values.Count -eq 0 -and $Permission.policy) {
+        $values = @($Permission.policy)
+    }
+    return ,$values
+}
+
 function Invoke-KeycloakJson {
     param(
         [string]$Method,
@@ -264,19 +284,19 @@ foreach ($policy in $policies) {
 
 Write-Host "[7/7] Create scope permissions"
 $permissions = @(
-    @{ name = "perm-order-view"; resource = "order"; scope = "view"; policy = "policy-user" },
-    @{ name = "perm-order-create"; resource = "order"; scope = "create"; policy = "policy-user" },
-    @{ name = "perm-order-edit"; resource = "order"; scope = "edit"; policy = "policy-user" },
-    @{ name = "perm-order-approve"; resource = "order"; scope = "approve"; policy = "policy-manager" },
-    @{ name = "perm-order-export"; resource = "order"; scope = "export"; policy = "policy-manager" },
-    @{ name = "perm-order-delete"; resource = "order"; scope = "delete"; policy = "policy-admin" },
-    @{ name = "perm-user-view"; resource = "user"; scope = "view"; policy = "policy-manager" },
-    @{ name = "perm-user-create"; resource = "user"; scope = "create"; policy = "policy-admin" },
-    @{ name = "perm-user-edit"; resource = "user"; scope = "edit"; policy = "policy-admin" },
-    @{ name = "perm-user-delete"; resource = "user"; scope = "delete"; policy = "policy-admin" },
-    @{ name = "perm-user-reset-pwd"; resource = "user"; scope = "reset_pwd"; policy = "policy-admin" },
-    @{ name = "perm-system-view"; resource = "system"; scope = "view"; policy = "policy-manager" },
-    @{ name = "perm-system-edit"; resource = "system"; scope = "edit"; policy = "policy-admin" }
+    @{ name = "perm-order-view"; resource = "order"; scope = "view"; policies = @("policy-user") },
+    @{ name = "perm-order-create"; resource = "order"; scope = "create"; policies = @("policy-user") },
+    @{ name = "perm-order-edit"; resource = "order"; scope = "edit"; policies = @("policy-user") },
+    @{ name = "perm-order-approve"; resource = "order"; scope = "approve"; policies = @("policy-manager") },
+    @{ name = "perm-order-export"; resource = "order"; scope = "export"; policies = @("policy-manager") },
+    @{ name = "perm-order-delete"; resource = "order"; scope = "delete"; policies = @("policy-admin") },
+    @{ name = "perm-user-view"; resource = "user"; scope = "view"; policies = @("policy-manager") },
+    @{ name = "perm-user-create"; resource = "user"; scope = "create"; policies = @("policy-admin") },
+    @{ name = "perm-user-edit"; resource = "user"; scope = "edit"; policies = @("policy-admin") },
+    @{ name = "perm-user-delete"; resource = "user"; scope = "delete"; policies = @("policy-admin") },
+    @{ name = "perm-user-reset-pwd"; resource = "user"; scope = "reset_pwd"; policies = @("policy-admin") },
+    @{ name = "perm-system-view"; resource = "system"; scope = "view"; policies = @("policy-manager") },
+    @{ name = "perm-system-edit"; resource = "system"; scope = "edit"; policies = @("policy-admin") }
 )
 foreach ($permission in $permissions) {
     New-IfMissing `
@@ -291,7 +311,7 @@ foreach ($permission in $permissions) {
             decisionStrategy = "UNANIMOUS"
             resources = @($permission.resource)
             scopes = @($permission.scope)
-            policies = @($permission.policy)
+            policies = Get-PermissionPolicies $permission
         } | Out-Null
 }
 

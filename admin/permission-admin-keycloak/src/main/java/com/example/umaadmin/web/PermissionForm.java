@@ -2,6 +2,9 @@ package com.example.umaadmin.web;
 
 import jakarta.validation.constraints.NotBlank;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class PermissionForm {
 
   @NotBlank
@@ -10,8 +13,7 @@ public class PermissionForm {
   private String resource;
   @NotBlank
   private String scope;
-  @NotBlank
-  private String policy;
+  private List<String> policies = new ArrayList<>();
 
   public String getName() {
     return name;
@@ -37,11 +39,11 @@ public class PermissionForm {
     this.scope = scope;
   }
 
-  public String getPolicy() {
-    return policy;
+  public List<String> getPolicies() {
+    return policies;
   }
 
-  public void setPolicy(String policy) {
-    this.policy = policy;
+  public void setPolicies(List<String> policies) {
+    this.policies = policies == null ? new ArrayList<>() : policies;
   }
 }

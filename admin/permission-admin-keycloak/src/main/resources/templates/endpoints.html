@@ -41,9 +41,26 @@
         <h2>新增或覆盖接口权限</h2>
         <form class="form" th:action="@{/endpoints}" th:object="${form}" method="post">
           <div class="field"><label>名称</label><input th:field="*{name}" placeholder="报表列表"></div>
-          <div class="field"><label>方法</label><input th:field="*{method}" placeholder="GET"></div>
+          <div class="field">
+            <label>方法</label>
+            <select th:field="*{method}">
+              <option value="GET">GET</option>
+              <option value="POST">POST</option>
+              <option value="PUT">PUT</option>
+              <option value="PATCH">PATCH</option>
+              <option value="DELETE">DELETE</option>
+            </select>
+          </div>
           <div class="field"><label>路径</label><input th:field="*{path}" placeholder="/api/reports"></div>
-          <div class="field"><label>权限</label><input th:field="*{permission}" placeholder="report#view"></div>
+          <div class="field">
+            <label>权限</label>
+            <select th:field="*{permission}">
+              <option value="">请选择权限</option>
+              <option th:each="permission : ${model.permissions}"
+                      th:value="${permission.resource() + '#' + permission.scope()}"
+                      th:text="${permission.resource() + '#' + permission.scope()}"></option>
+            </select>
+          </div>
           <button class="button" type="submit">保存</button>
         </form>
       </section>

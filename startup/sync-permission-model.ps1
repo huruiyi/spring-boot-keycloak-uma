@@ -30,6 +30,16 @@ function ConvertTo-Array {
     return ,@($Value)
 }
 
+function Get-PermissionPolicies {
+    param([object]$Permission)
+
+    $values = ConvertTo-Array $Permission.policies
+    if ($values.Count -eq 0 -and $Permission.policy) {
+        $values = @($Permission.policy)
+    }
+    return ,$values
+}
+
 function Invoke-KeycloakJson {
     param(
         [string]$Method,
@@ -363,7 +373,7 @@ foreach ($permission in (ConvertTo-Array $model.permissions)) {
             decisionStrategy = "UNANIMOUS"
             resources = @($permission.resource)
             scopes = @($permission.scope)
-            policies = @($permission.policy)
+            policies = Get-PermissionPolicies $permission
         }
 }
 

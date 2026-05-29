@@ -36,8 +36,19 @@
         <h2 th:text="${editing} ? '编辑策略' : '新增策略'">新增策略</h2>
         <form class="form" th:action="@{/policies}" th:object="${form}" method="post">
           <div class="field"><label>策略名</label><input th:field="*{name}" th:readonly="${editing}" placeholder="policy-auditor"></div>
-          <div class="field"><label>类型</label><input th:field="*{type}" value="role"></div>
-          <div class="field"><label>Realm Role</label><input th:field="*{realmRole}" placeholder="auditor"></div>
+          <div class="field">
+            <label>类型</label>
+            <select th:field="*{type}">
+              <option value="role">role</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Realm Role</label>
+            <select th:field="*{realmRole}">
+              <option value="">请选择 Realm Role</option>
+              <option th:each="role : ${model.realmRoles}" th:value="${role.name()}" th:text="${role.name()}"></option>
+            </select>
+          </div>
           <div class="field"><label>说明</label><input th:field="*{description}" placeholder="审计员策略"></div>
           <div class="actions">
             <button class="button" type="submit">保存</button>

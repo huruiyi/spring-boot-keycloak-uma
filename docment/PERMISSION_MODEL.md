@@ -7,6 +7,8 @@
 - `startup/demo-realm.json`
 - `startup/setup-uma.ps1`
 
+**关系总结：Realm Role 是身份标签，Policy 是授权条件，Permission 才是具体资源动作权限。**
+
 如果需要新增用户、Realm、策略、UMA 资源或系统权限，先参考 [docment/README.md](./README.md) 中按维度拆分的维护说明。
 
 ## 用户角色总览
