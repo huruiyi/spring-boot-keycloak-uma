@@ -5,8 +5,17 @@
   "type": "module",
   "scripts": {
     "dev": "vite --host 0.0.0.0",
+    "dev:local": "vite --host 0.0.0.0",
+    "dev:uat": "vite --host 0.0.0.0 --mode uat",
+    "dev:prod": "vite --host 0.0.0.0 --mode prod",
     "build": "vite build",
+    "build:local": "vite build --mode development",
+    "build:uat": "vite build --mode uat",
+    "build:prod": "vite build --mode prod",
     "preview": "vite preview --host 0.0.0.0",
+    "preview:local": "vite preview --host 0.0.0.0 --mode development",
+    "preview:uat": "vite preview --host 0.0.0.0 --mode uat",
+    "preview:prod": "vite preview --host 0.0.0.0 --mode prod",
     "typecheck": "vue-tsc --noEmit"
   },
   "dependencies": {

@@ -7,6 +7,7 @@ target/
 
 frontend/node_modules/
 frontend/dist/
+frontend/.env.*.local
 backend/target/
 /.arts
 /.codeartsdoer

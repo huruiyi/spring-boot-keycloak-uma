@@ -16,9 +16,10 @@ const expirySkewMs = 10_000;
 const deniedCacheMs = 30_000;
 const rptCacheStorageKey = "uma-demo:rpt-cache-enabled";
 
-const keycloakBaseUrl = "http://localhost:8080";
-const realm = "demo";
-const audience = "demo-api";
+const keycloakBaseUrl = import.meta.env.VITE_KEYCLOAK_URL ?? "http://localhost:8080";
+const realm = import.meta.env.VITE_KEYCLOAK_REALM ?? "demo";
+const audience = import.meta.env.VITE_KEYCLOAK_AUDIENCE ?? "demo-api";
+const apiBaseUrl = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:9000";
 
 let rptCacheEnabled = localStorage.getItem(rptCacheStorageKey) !== "false";
 
@@ -116,7 +117,7 @@ export async function apiFetch<T>(url: string, permissions: string[], init: Requ
     headers.set("Content-Type", "application/json");
   }
 
-  const response = await fetch(`http://localhost:9000${url}`, {
+  const response = await fetch(`${apiBaseUrl}${url}`, {
     ...init,
     headers
   });

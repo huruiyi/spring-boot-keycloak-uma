@@ -1,6 +1,14 @@
 package com.example.uma.api;
 
+import com.example.uma.api.dto.ApproveOrderResponse;
+import com.example.uma.api.dto.CreateOrderRequest;
+import com.example.uma.api.dto.CreateOrderResponse;
+import com.example.uma.api.dto.OrderDto;
+import com.example.uma.api.dto.OrderListResponse;
+import com.example.uma.api.dto.PermissionsResponse;
 import com.example.uma.security.UmaPermissionService;
+import com.example.uma.security.UmaPermissions;
+import jakarta.validation.Valid;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -8,7 +16,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/orders")
@@ -21,30 +28,30 @@ public class OrderController {
   }
 
   @GetMapping
-  @PreAuthorize("@umaPermissionService.hasPermission(authentication.principal, 'order', 'view')")
-  public Map<String, Object> listOrders() {
-    return Map.of(
-        "data", List.of(
-            Map.of("id", 1001, "customer", "Acme Corp", "amount", new BigDecimal("1299.00"), "status", "PENDING"),
-            Map.of("id", 1002, "customer", "Globex", "amount", new BigDecimal("2580.50"), "status", "APPROVED")
+  @PreAuthorize(UmaPermissions.HAS_ORDER_VIEW)
+  public OrderListResponse listOrders() {
+    return new OrderListResponse(
+        List.of(
+            new OrderDto(1001, "Acme Corp", new BigDecimal("1299.00"), "PENDING"),
+            new OrderDto(1002, "Globex", new BigDecimal("2580.50"), "APPROVED")
         )
     );
   }
 
   @PostMapping
-  @PreAuthorize("@umaPermissionService.hasPermission(authentication.principal, 'order', 'create')")
-  public Map<String, Object> createOrder(@RequestBody Map<String, Object> body) {
-    return Map.of("created", true, "order", body);
+  @PreAuthorize(UmaPermissions.HAS_ORDER_CREATE)
+  public CreateOrderResponse createOrder(@Valid @RequestBody CreateOrderRequest body) {
+    return new CreateOrderResponse(true, body);
   }
 
   @PostMapping("/approve")
-  @PreAuthorize("@umaPermissionService.hasPermission(authentication.principal, 'order', 'approve')")
-  public Map<String, Object> approveOrder() {
-    return Map.of("approved", true);
+  @PreAuthorize(UmaPermissions.HAS_ORDER_APPROVE)
+  public ApproveOrderResponse approveOrder() {
+    return new ApproveOrderResponse(true);
   }
 
   @GetMapping("/permissions")
-  public Map<String, Object> permissions(@AuthenticationPrincipal Jwt jwt) {
-    return Map.of("permissions", umaPermissionService.permissions(jwt));
+  public PermissionsResponse permissions(@AuthenticationPrincipal Jwt jwt) {
+    return new PermissionsResponse(umaPermissionService.permissions(jwt));
   }
 }

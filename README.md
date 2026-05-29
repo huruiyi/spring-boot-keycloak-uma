@@ -953,3 +953,64 @@ Get-NetTCPConnection -LocalPort 9000,5173 -ErrorAction SilentlyContinue |
 ```powershell
 docker compose down
 ```
+
+## Frontend environment variables
+
+The frontend uses npm as the canonical package manager for this repo. Keep
+`frontend/package-lock.json` and do not add a second lock file.
+
+The frontend supports three Vite modes:
+
+```powershell
+npm run dev:local
+npm run dev:uat
+npm run dev:prod
+
+npm run build:local
+npm run build:uat
+npm run build:prod
+```
+
+The committed environment files are:
+
+```text
+frontend/.env       local demo defaults
+frontend/.env.uat   UAT endpoint template
+frontend/.env.prod  production endpoint template
+```
+
+Vite reserves `local` for `.env.*.local` override files, so the `*:local`
+scripts use Vite's default development mode while still setting
+`VITE_APP_ENV=local`.
+
+The default local values match the local demo stack:
+
+```text
+VITE_APP_ENV=local
+VITE_KEYCLOAK_URL=http://localhost:8080
+VITE_KEYCLOAK_REALM=demo
+VITE_KEYCLOAK_CLIENT_ID=demo-frontend
+VITE_KEYCLOAK_AUDIENCE=demo-api
+VITE_API_BASE_URL=http://localhost:9000
+```
+
+Use `frontend/.env.*.local` for per-machine secrets or endpoint overrides, for
+example `frontend/.env.development.local` or `frontend/.env.uat.local`. These
+files are intentionally ignored.
+
+## Implemented optimizations
+
+The current codebase includes these maintainability improvements:
+
+- Frontend Keycloak and API endpoints are loaded from Vite environment variables.
+- The repo uses npm as the canonical frontend package manager and keeps only `package-lock.json`.
+- Backend UMA permission expressions are centralized in `UmaPermissions`.
+- Backend controllers use typed request and response records instead of raw `Map<String, Object>` payloads.
+- Order creation uses bean validation for request input.
+- Backend tests cover UMA permission parsing, secured API access, forbidden access, and validation failures.
+- Spring Boot Actuator is enabled so `/actuator/health` is available, with only `health` and `info` exposed by default.
+- Local environment override files such as `frontend/.env.uat.local` are ignored.
+
+## Optimization TODO
+
+Only unfinished follow-up work is tracked in `OPTIMIZATION_TODO.md`.
