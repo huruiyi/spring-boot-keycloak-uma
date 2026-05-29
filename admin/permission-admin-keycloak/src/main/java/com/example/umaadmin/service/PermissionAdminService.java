@@ -24,29 +24,19 @@ public class PermissionAdminService {
   }
 
   public void addRole(RealmRoleModel role) {
-    PermissionModel model = repository.get();
-    model.getRealmRoles().removeIf(item -> item.name().equals(role.name()));
-    model.getRealmRoles().add(role);
-    repository.save(model);
+    repository.saveRole(role);
   }
 
   public void deleteRole(String name) {
-    PermissionModel model = repository.get();
-    model.getRealmRoles().removeIf(item -> item.name().equals(name));
-    repository.save(model);
+    repository.deleteRole(name);
   }
 
   public void addUser(UserModel user) {
-    PermissionModel model = repository.get();
-    model.getUsers().removeIf(item -> item.username().equals(user.username()));
-    model.getUsers().add(user);
-    repository.save(model);
+    repository.saveUser(user);
   }
 
   public void deleteUser(String username) {
-    PermissionModel model = repository.get();
-    model.getUsers().removeIf(item -> item.username().equals(username));
-    repository.save(model);
+    repository.deleteUser(username);
   }
 
   public void addResource(UmaResourceModel resource) {

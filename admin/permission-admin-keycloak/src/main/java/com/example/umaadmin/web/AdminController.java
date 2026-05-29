@@ -1,6 +1,7 @@
 package com.example.umaadmin.web;
 
 import com.example.umaadmin.model.PermissionRuleModel;
+import com.example.umaadmin.model.PermissionModel;
 import com.example.umaadmin.model.PolicyModel;
 import com.example.umaadmin.model.RealmRoleModel;
 import com.example.umaadmin.model.SystemEndpointModel;
@@ -8,6 +9,7 @@ import com.example.umaadmin.model.UmaResourceModel;
 import com.example.umaadmin.model.UserModel;
 import com.example.umaadmin.service.PermissionAdminService;
 import jakarta.validation.Valid;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -32,10 +34,28 @@ public class AdminController {
     return "dashboard";
   }
 
+  @GetMapping("/favicon.ico")
+  public ResponseEntity<Void> favicon() {
+    return ResponseEntity.noContent().build();
+  }
+
   @GetMapping("/roles")
-  public String roles(Model model) {
-    model.addAttribute("model", service.model());
-    model.addAttribute("form", new RoleForm());
+  public String roles(@RequestParam(required = false) String name, Model model) {
+    PermissionModel permissionModel = service.model();
+    RoleForm form = new RoleForm();
+    boolean editing = name != null && !name.isBlank();
+    if (editing) {
+      permissionModel.getRealmRoles().stream()
+          .filter(role -> role.name().equals(name))
+          .findFirst()
+          .ifPresent(role -> {
+            form.setName(role.name());
+            form.setDescription(role.description());
+          });
+    }
+    model.addAttribute("model", permissionModel);
+    model.addAttribute("form", form);
+    model.addAttribute("editing", editing);
     return "roles";
   }
 
@@ -43,6 +63,7 @@ public class AdminController {
   public String addRole(@Valid @ModelAttribute("form") RoleForm form, BindingResult bindingResult, Model model, RedirectAttributes redirectAttributes) {
     if (bindingResult.hasErrors()) {
       model.addAttribute("model", service.model());
+      model.addAttribute("editing", false);
       return "roles";
     }
     service.addRole(new RealmRoleModel(form.getName(), form.getDescription()));
@@ -58,9 +79,23 @@ public class AdminController {
   }
 
   @GetMapping("/users")
-  public String users(Model model) {
-    model.addAttribute("model", service.model());
-    model.addAttribute("form", new UserForm());
+  public String users(@RequestParam(required = false) String username, Model model) {
+    PermissionModel permissionModel = service.model();
+    UserForm form = new UserForm();
+    boolean editing = username != null && !username.isBlank();
+    if (editing) {
+      permissionModel.getUsers().stream()
+          .filter(user -> user.username().equals(username))
+          .findFirst()
+          .ifPresent(user -> {
+            form.setUsername(user.username());
+            form.setEmail(user.email());
+            form.setRealmRoles(user.realmRoles());
+          });
+    }
+    model.addAttribute("model", permissionModel);
+    model.addAttribute("form", form);
+    model.addAttribute("editing", editing);
     return "users";
   }
 
@@ -68,9 +103,10 @@ public class AdminController {
   public String addUser(@Valid @ModelAttribute("form") UserForm form, BindingResult bindingResult, Model model, RedirectAttributes redirectAttributes) {
     if (bindingResult.hasErrors()) {
       model.addAttribute("model", service.model());
+      model.addAttribute("editing", false);
       return "users";
     }
-    service.addUser(new UserModel(form.getUsername(), form.getEmail(), form.getPassword(), FormSupport.splitCsv(form.getRealmRoles())));
+    service.addUser(new UserModel(form.getUsername(), form.getEmail(), form.getPassword(), form.getRealmRoles()));
     redirectAttributes.addFlashAttribute("message", "用户已保存");
     return "redirect:/users";
   }

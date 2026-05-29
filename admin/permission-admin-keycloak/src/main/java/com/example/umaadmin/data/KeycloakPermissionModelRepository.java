@@ -95,6 +95,37 @@ public class KeycloakPermissionModelRepository implements PermissionModelReposit
     lastModel = loadFromKeycloak();
   }
 
+  @Override
+  public synchronized void saveRole(RealmRoleModel role) {
+    String token = adminToken();
+    upsertRealmRole(role, token);
+    lastModel = loadFromKeycloak();
+  }
+
+  @Override
+  public synchronized void deleteRole(String name) {
+    String token = adminToken();
+    delete(adminBase() + "/roles/" + encodePath(name), token);
+    lastModel = loadFromKeycloak();
+  }
+
+  @Override
+  public synchronized void saveUser(UserModel user) {
+    String token = adminToken();
+    upsertUser(user, token);
+    lastModel = loadFromKeycloak();
+  }
+
+  @Override
+  public synchronized void deleteUser(String username) {
+    String token = adminToken();
+    String userId = userId(username, token);
+    if (userId != null) {
+      delete(adminBase() + "/users/" + userId, token);
+    }
+    lastModel = loadFromKeycloak();
+  }
+
   private PermissionModel loadFromKeycloak() {
     String token = adminToken();
     PermissionModel model = new PermissionModel();
@@ -219,17 +250,22 @@ public class KeycloakPermissionModelRepository implements PermissionModelReposit
   private void syncRealmRoles(PermissionModel previous, PermissionModel model, String token) {
     Set<String> currentNames = names(model.getRealmRoles().stream().map(RealmRoleModel::name).toList());
     for (RealmRoleModel role : model.getRealmRoles()) {
-      String roleUrl = adminBase() + "/roles/" + encodePath(role.name());
-      if (exists(roleUrl, token)) {
-        put(roleUrl, token, Map.of("name", role.name(), "description", safe(role.description())));
-      } else {
-        post(adminBase() + "/roles", token, Map.of("name", role.name(), "description", safe(role.description())));
-      }
+      upsertRealmRole(role, token);
     }
     for (RealmRoleModel role : previous.getRealmRoles()) {
       if (!currentNames.contains(role.name())) {
         delete(adminBase() + "/roles/" + encodePath(role.name()), token);
       }
+    }
+  }
+
+  private void upsertRealmRole(RealmRoleModel role, String token) {
+    String roleUrl = adminBase() + "/roles/" + encodePath(role.name());
+    Map<String, Object> body = Map.of("name", role.name(), "description", safe(role.description()));
+    if (exists(roleUrl, token)) {
+      put(roleUrl, token, body);
+    } else {
+      post(adminBase() + "/roles", token, body);
     }
   }
 
@@ -253,29 +289,7 @@ public class KeycloakPermissionModelRepository implements PermissionModelReposit
   private void syncUsers(PermissionModel previous, PermissionModel model, String token) {
     Set<String> currentNames = names(model.getUsers().stream().map(UserModel::username).toList());
     for (UserModel user : model.getUsers()) {
-      String userId = userId(user.username(), token);
-      if (userId == null) {
-        post(adminBase() + "/users", token, mapOf(
-            "username", user.username(),
-            "email", safe(user.email()),
-            "enabled", true
-        ));
-        userId = userId(user.username(), token);
-      } else {
-        put(adminBase() + "/users/" + userId, token, mapOf(
-            "username", user.username(),
-            "email", safe(user.email()),
-            "enabled", true
-        ));
-      }
-      if (!safe(user.password()).isBlank()) {
-        put(adminBase() + "/users/" + userId + "/reset-password", token, mapOf(
-            "type", "password",
-            "value", user.password(),
-            "temporary", false
-        ));
-      }
-      replaceUserRealmRoles(userId, user.realmRoles(), token);
+      upsertUser(user, token);
     }
     for (UserModel user : previous.getUsers()) {
       if (!currentNames.contains(user.username())) {
@@ -285,6 +299,38 @@ public class KeycloakPermissionModelRepository implements PermissionModelReposit
         }
       }
     }
+  }
+
+  private void upsertUser(UserModel user, String token) {
+    String userId = userId(user.username(), token);
+    if (userId == null) {
+      post(adminBase() + "/users", token, userPayload(user));
+      userId = userId(user.username(), token);
+      if (userId == null) {
+        throw new IllegalStateException("Keycloak user was not found after create: " + user.username());
+      }
+    } else {
+      put(adminBase() + "/users/" + userId, token, userPayload(user));
+    }
+    if (!safe(user.password()).isBlank()) {
+      put(adminBase() + "/users/" + userId + "/reset-password", token, mapOf(
+          "type", "password",
+          "value", user.password(),
+          "temporary", false
+      ));
+    }
+    replaceUserRealmRoles(userId, user.realmRoles(), token);
+  }
+
+  private Map<String, Object> userPayload(UserModel user) {
+    Map<String, Object> payload = mapOf(
+        "username", user.username(),
+        "enabled", true
+    );
+    if (!safe(user.email()).isBlank()) {
+      payload.put("email", user.email());
+    }
+    return payload;
   }
 
   private void syncScopes(PermissionModel model, String authzBase, String token) {

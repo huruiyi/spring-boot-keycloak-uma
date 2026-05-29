@@ -20,7 +20,8 @@
             <td th:text="${user.username()}"></td>
             <td th:text="${user.email()}"></td>
             <td><span class="tag" th:each="role : ${user.realmRoles()}" th:text="${role}"></span></td>
-            <td>
+            <td class="actions">
+              <a class="button secondary" th:href="@{/users(username=${user.username()})}">编辑</a>
               <form class="inline-form" th:action="@{/users/delete}" method="post">
                 <input type="hidden" name="username" th:value="${user.username()}">
                 <button class="button danger" type="submit">删除</button>
@@ -31,13 +32,30 @@
         </table>
       </section>
       <section class="panel">
-        <h2>新增或覆盖用户</h2>
+        <h2 th:text="${editing} ? '编辑用户' : '新增用户'">新增用户</h2>
         <form class="form" th:action="@{/users}" th:object="${form}" method="post">
-          <div class="field"><label>用户名</label><input th:field="*{username}" placeholder="auditor"></div>
-          <div class="field"><label>邮箱</label><input th:field="*{email}" placeholder="auditor@example.com"></div>
-          <div class="field"><label>密码</label><input th:field="*{password}" placeholder="auditor123"></div>
-          <div class="field"><label>Realm Role，逗号分隔</label><input th:field="*{realmRoles}" placeholder="manager,user"></div>
-          <button class="button" type="submit">保存</button>
+          <div class="field">
+            <label>用户名</label>
+            <input th:field="*{username}" th:readonly="${editing}" placeholder="auditor">
+          </div>
+          <div class="field">
+            <label>邮箱</label>
+            <input th:field="*{email}" placeholder="auditor@example.com">
+          </div>
+          <div class="field">
+            <label>密码</label>
+            <input th:field="*{password}" placeholder="留空则不重置密码">
+          </div>
+          <div class="field">
+            <label>Realm Role</label>
+            <select class="multi-select" th:field="*{realmRoles}" multiple>
+              <option th:each="role : ${model.realmRoles}" th:value="${role.name()}" th:text="${role.name()}"></option>
+            </select>
+          </div>
+          <div class="actions">
+            <button class="button" type="submit">保存</button>
+            <a class="button secondary" th:if="${editing}" th:href="@{/users}">取消</a>
+          </div>
         </form>
       </section>
     </div>

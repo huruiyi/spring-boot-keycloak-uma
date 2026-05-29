@@ -3,15 +3,17 @@ package com.example.umaadmin.web;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class UserForm {
 
   @NotBlank
   private String username;
   @Email
   private String email;
-  @NotBlank
   private String password;
-  private String realmRoles;
+  private List<String> realmRoles = new ArrayList<>();
 
   public String getUsername() {
     return username;
@@ -37,11 +39,11 @@ public class UserForm {
     this.password = password;
   }
 
-  public String getRealmRoles() {
+  public List<String> getRealmRoles() {
     return realmRoles;
   }
 
-  public void setRealmRoles(String realmRoles) {
-    this.realmRoles = realmRoles;
+  public void setRealmRoles(List<String> realmRoles) {
+    this.realmRoles = realmRoles == null ? new ArrayList<>() : realmRoles;
   }
 }
