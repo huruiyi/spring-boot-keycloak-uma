@@ -1,6 +1,6 @@
 # Permission Admin Keycloak
 
-This module is a Keycloak-backed variant of `permission-admin`.
+This module is the Keycloak-backed variant of `permission-admin-local`.
 
 It uses the same Spring Boot + Thymeleaf management UI, but it does not persist a local JSON file. Reads and writes go directly through the Keycloak Admin REST API.
 

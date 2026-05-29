@@ -12,9 +12,9 @@
   </parent>
 
   <groupId>com.example</groupId>
-  <artifactId>permission-admin</artifactId>
+  <artifactId>permission-admin-local</artifactId>
   <version>0.0.1-SNAPSHOT</version>
-  <name>permission-admin</name>
+  <name>permission-admin-local</name>
 
   <properties>
     <java.version>21</java.version>

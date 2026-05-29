@@ -10,9 +10,11 @@ frontend/node_modules/
 frontend/dist/
 frontend/.env.*.local
 backend/target/
-permission-admin/target/
-permission-admin/data/
-permission-admin/permission-data/
-permission-admin-keycloak/target/
+admin/permission-admin-local/target/
+admin/permission-admin-local/data/
+admin/permission-admin-local/permission-data/
+admin/permission-admin-local/logs/
+admin/permission-admin-keycloak/target/
+admin/permission-admin-keycloak/logs/
 /.arts
 /.codeartsdoer

@@ -4,7 +4,7 @@ param(
     [string]$AdminUser = "admin",
     [string]$AdminPassword = "admin",
     [string]$ResourceServerClientId = "demo-api",
-    [string]$ModelFile = "permission-data/permission-model.json"
+    [string]$ModelFile = "admin/permission-admin-local/permission-data/permission-model.json"
 )
 
 $ErrorActionPreference = "Stop"

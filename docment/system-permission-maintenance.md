@@ -78,7 +78,7 @@ apiFetch("/api/orders/cancel", ["order#cancel"], { method: "POST" })
 同步更新：
 
 - `PERMISSION_MODEL.md`
-- `docs/permission-maintenance/uma-maintenance.md`
+- `docment/uma-maintenance.md`
 - 本文档中的接口权限表
 
 ## 调整已有权限归属

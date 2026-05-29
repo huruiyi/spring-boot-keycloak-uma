@@ -1032,7 +1032,7 @@ VITE_API_BASE_URL=http://localhost:9000
 
 权限模型速查见 [PERMISSION_MODEL.md](./PERMISSION_MODEL.md)。
 
-按维护维度拆分的说明文档见 [docs/permission-maintenance/README.md](./docs/permission-maintenance/README.md)，包括：
+按维护维度拆分的说明文档见 [docment/README.md](./docment/README.md)，包括：
 
 - Realm 维护
 - 用户维护
@@ -1041,12 +1041,17 @@ VITE_API_BASE_URL=http://localhost:9000
 - 系统权限变更维护
 ## 权限管理后台
 
-仓库新增独立的 Spring Boot + Thymeleaf 后台系统 `permission-admin`，用于维护用户、Realm Role、UMA Resource、Policy、Permission 和系统接口权限映射。它和业务后端 `backend` 分离，默认端口是 `9100`。
+仓库包含两个独立的 Spring Boot + Thymeleaf 权限管理后台，二者都和业务后端 `backend` 分离：
+
+- `admin/permission-admin-local`：本地 JSON 文件版本，默认端口 `9100`。
+- `admin/permission-admin-keycloak`：Keycloak Admin API 直连版本，默认端口 `9200`。
+
+`permission-admin-local` 用于维护用户、Realm Role、UMA Resource、Policy、Permission 和系统接口权限映射，并保存到本地 JSON 文件。
 
 启动：
 
 ```powershell
-.\startup\run-permission-admin.ps1
+.\startup\run-permission-admin-local.ps1
 ```
 
 访问：
@@ -1064,10 +1069,10 @@ admin / admin
 可通过环境变量覆盖：
 
 ```text
-PERMISSION_ADMIN_USERNAME
-PERMISSION_ADMIN_PASSWORD
-PERMISSION_ADMIN_PORT
-PERMISSION_ADMIN_DATA_FILE
+PERMISSION_ADMIN_LOCAL_USERNAME
+PERMISSION_ADMIN_LOCAL_PASSWORD
+PERMISSION_ADMIN_LOCAL_PORT
+PERMISSION_ADMIN_LOCAL_DATA_FILE
 ```
 
-当前版本使用本地 JSON 文件持久化，默认路径是 `permission-admin/data/permission-model.json`。该文件是运行数据，不提交到 git。后续如果要直接同步 Keycloak，可以在 `permission-admin` 中替换 repository 或新增 Keycloak Admin REST 同步服务。
+本地版本使用 JSON 文件持久化，默认路径是 `admin/permission-admin-local/permission-data/permission-model.json`。该文件是运行数据，不提交到 git。需要直接保存到 Keycloak 时，使用 `admin/permission-admin-keycloak`。

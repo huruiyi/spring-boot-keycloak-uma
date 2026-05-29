@@ -1,9 +1,9 @@
 # Permission Admin 同步 Keycloak
 
-`permission-admin` 保存的是本地 JSON 权限模型，默认路径：
+`permission-admin-local` 保存的是本地 JSON 权限模型，默认路径：
 
 ```text
-permission-admin/data/permission-model.json
+admin/permission-admin-local/permission-data/permission-model.json
 ```
 
 这个文件是运行数据，不提交到 git。修改后台页面并保存后，执行同步脚本把 JSON 中的配置推送到 Keycloak：
@@ -21,7 +21,7 @@ permission-admin/data/permission-model.json
   -AdminUser "admin" `
   -AdminPassword "admin" `
   -ResourceServerClientId "demo-api" `
-  -ModelFile "permission-admin/data/permission-model.json"
+  -ModelFile "admin/permission-admin-local/permission-data/permission-model.json"
 ```
 
 同步范围：
@@ -37,7 +37,7 @@ permission-admin/data/permission-model.json
 使用流程：
 
 1. 启动 Keycloak。
-2. 启动 `permission-admin`。
+2. 启动 `permission-admin-local`。
 3. 在后台维护角色、用户、资源、策略、权限并保存。
 4. 执行 `.\startup\sync-permission-model.ps1`。
 5. 重新登录前端用户，获取新的 access token，再申请 RPT 验证权限。

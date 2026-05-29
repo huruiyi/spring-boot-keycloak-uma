@@ -7,7 +7,7 @@
 - `startup/demo-realm.json`
 - `startup/setup-uma.ps1`
 
-如果需要新增用户、Realm、策略、UMA 资源或系统权限，先参考 [docs/permission-maintenance/README.md](./docs/permission-maintenance/README.md) 中按维度拆分的维护说明。
+如果需要新增用户、Realm、策略、UMA 资源或系统权限，先参考 [docment/README.md](./README.md) 中按维度拆分的维护说明。
 
 ## 用户角色总览
 
