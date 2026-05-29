@@ -1,0 +1,170 @@
+{
+  "realmRoles" : [ {
+    "name" : "admin",
+    "description" : "Administrator role"
+  }, {
+    "name" : "manager",
+    "description" : "Manager role"
+  }, {
+    "name" : "user",
+    "description" : "Normal user role"
+  }, {
+    "name" : "auditor",
+    "description" : "审计员"
+  } ],
+  "users" : [ {
+    "username" : "admin",
+    "email" : "admin@example.com",
+    "password" : "admin123",
+    "realmRoles" : [ "admin", "manager", "user" ]
+  }, {
+    "username" : "manager",
+    "email" : "manager@example.com",
+    "password" : "manager123",
+    "realmRoles" : [ "manager", "user" ]
+  }, {
+    "username" : "staff",
+    "email" : "staff@example.com",
+    "password" : "staff123",
+    "realmRoles" : [ "user" ]
+  }, {
+    "username" : "auditor",
+    "email" : "auditor@xx.com",
+    "password" : "auditor@xx.com",
+    "realmRoles" : [ "manager", "user", "auditor" ]
+  } ],
+  "clients" : [ {
+    "clientId" : "demo-frontend",
+    "type" : "public",
+    "description" : "Demo Frontend",
+    "defaultClientScopes" : [ "profile", "email", "roles" ],
+    "realmRoleScopeMappings" : [ "admin", "manager", "user" ]
+  }, {
+    "clientId" : "demo-api",
+    "type" : "confidential-resource-server",
+    "description" : "Demo API Resource Server",
+    "defaultClientScopes" : [ "profile", "email", "roles" ],
+    "realmRoleScopeMappings" : [ ]
+  } ],
+  "resources" : [ {
+    "name" : "order",
+    "uris" : [ "/api/orders/*" ],
+    "scopes" : [ "view", "create", "edit", "delete", "approve", "export" ]
+  }, {
+    "name" : "user",
+    "uris" : [ "/api/users/*" ],
+    "scopes" : [ "view", "create", "edit", "delete", "reset_pwd" ]
+  }, {
+    "name" : "system",
+    "uris" : [ "/api/system/*" ],
+    "scopes" : [ "view", "edit" ]
+  } ],
+  "policies" : [ {
+    "name" : "policy-user",
+    "type" : "role",
+    "realmRole" : "user",
+    "description" : "Normal user policy"
+  }, {
+    "name" : "policy-manager",
+    "type" : "role",
+    "realmRole" : "manager",
+    "description" : "Manager policy"
+  }, {
+    "name" : "policy-admin",
+    "type" : "role",
+    "realmRole" : "admin",
+    "description" : "Administrator policy"
+  } ],
+  "permissions" : [ {
+    "name" : "perm-order-view",
+    "resource" : "order",
+    "scope" : "view",
+    "policy" : "policy-user"
+  }, {
+    "name" : "perm-order-create",
+    "resource" : "order",
+    "scope" : "create",
+    "policy" : "policy-user"
+  }, {
+    "name" : "perm-order-edit",
+    "resource" : "order",
+    "scope" : "edit",
+    "policy" : "policy-user"
+  }, {
+    "name" : "perm-order-approve",
+    "resource" : "order",
+    "scope" : "approve",
+    "policy" : "policy-manager"
+  }, {
+    "name" : "perm-order-export",
+    "resource" : "order",
+    "scope" : "export",
+    "policy" : "policy-manager"
+  }, {
+    "name" : "perm-order-delete",
+    "resource" : "order",
+    "scope" : "delete",
+    "policy" : "policy-admin"
+  }, {
+    "name" : "perm-user-view",
+    "resource" : "user",
+    "scope" : "view",
+    "policy" : "policy-manager"
+  }, {
+    "name" : "perm-user-create",
+    "resource" : "user",
+    "scope" : "create",
+    "policy" : "policy-admin"
+  }, {
+    "name" : "perm-user-edit",
+    "resource" : "user",
+    "scope" : "edit",
+    "policy" : "policy-admin"
+  }, {
+    "name" : "perm-user-delete",
+    "resource" : "user",
+    "scope" : "delete",
+    "policy" : "policy-admin"
+  }, {
+    "name" : "perm-user-reset-pwd",
+    "resource" : "user",
+    "scope" : "reset_pwd",
+    "policy" : "policy-admin"
+  }, {
+    "name" : "perm-system-view",
+    "resource" : "system",
+    "scope" : "view",
+    "policy" : "policy-manager"
+  }, {
+    "name" : "perm-system-edit",
+    "resource" : "system",
+    "scope" : "edit",
+    "policy" : "policy-admin"
+  } ],
+  "endpoints" : [ {
+    "name" : "List orders",
+    "method" : "GET",
+    "path" : "/api/orders",
+    "permission" : "order#view"
+  }, {
+    "name" : "Create order",
+    "method" : "POST",
+    "path" : "/api/orders",
+    "permission" : "order#create"
+  }, {
+    "name" : "Approve order",
+    "method" : "POST",
+    "path" : "/api/orders/approve",
+    "permission" : "order#approve"
+  }, {
+    "name" : "View system config",
+    "method" : "GET",
+    "path" : "/api/system/config",
+    "permission" : "system#view"
+  }, {
+    "name" : "Update system config",
+    "method" : "POST",
+    "path" : "/api/system/config",
+    "permission" : "system#edit"
+  } ]
+}

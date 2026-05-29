@@ -4,6 +4,7 @@ target/
 .idea/
 .vscode/
 *.log
+/data/
 
 frontend/node_modules/
 frontend/dist/
@@ -11,5 +12,6 @@ frontend/.env.*.local
 backend/target/
 permission-admin/target/
 permission-admin/data/
+permission-admin/permission-data/
 /.arts
 /.codeartsdoer

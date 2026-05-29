@@ -3,6 +3,8 @@ package com.example.umaadmin.data;
 import com.example.umaadmin.model.PermissionModel;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
 
@@ -12,6 +14,8 @@ import java.nio.file.Path;
 
 @Repository
 public class FilePermissionModelRepository implements PermissionModelRepository {
+
+  private static final Logger log = LoggerFactory.getLogger(FilePermissionModelRepository.class);
 
   private final ObjectMapper objectMapper;
   private final Path dataFile;
@@ -36,6 +40,7 @@ public class FilePermissionModelRepository implements PermissionModelRepository 
       cachedModel = objectMapper.readValue(dataFile.toFile(), PermissionModel.class);
       return cachedModel;
     } catch (IOException e) {
+      log.error("Failed to read permission model file: {}", dataFile.toAbsolutePath(), e);
       throw new IllegalStateException("Failed to read permission model file: " + dataFile, e);
     }
   }
@@ -50,6 +55,7 @@ public class FilePermissionModelRepository implements PermissionModelRepository 
       objectMapper.writeValue(dataFile.toFile(), model);
       cachedModel = model;
     } catch (IOException e) {
+      log.error("Failed to save permission model file: {}", dataFile.toAbsolutePath(), e);
       throw new IllegalStateException("Failed to save permission model file: " + dataFile, e);
     }
   }
