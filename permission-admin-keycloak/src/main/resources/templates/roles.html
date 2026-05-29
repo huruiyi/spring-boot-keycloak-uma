@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>Realm Role</title>
+  <link rel="stylesheet" th:href="@{/assets/admin.css}">
+</head>
+<body>
+<div class="shell">
+  <aside th:replace="~{fragments :: sidebar}"></aside>
+  <main class="main">
+    <div class="page-title"><h1>Realm Role</h1></div>
+    <p class="notice" th:if="${message}" th:text="${message}"></p>
+    <div class="split">
+      <section class="panel">
+        <table>
+          <thead><tr><th>名称</th><th>说明</th><th>操作</th></tr></thead>
+          <tbody>
+          <tr th:each="role : ${model.realmRoles}">
+            <td th:text="${role.name()}"></td>
+            <td th:text="${role.description()}"></td>
+            <td>
+              <form class="inline-form" th:action="@{/roles/delete}" method="post">
+                <input type="hidden" name="name" th:value="${role.name()}">
+                <button class="button danger" type="submit">删除</button>
+              </form>
+            </td>
+          </tr>
+          </tbody>
+        </table>
+      </section>
+      <section class="panel">
+        <h2>新增或覆盖角色</h2>
+        <form class="form" th:action="@{/roles}" th:object="${form}" method="post">
+          <div class="field"><label>名称</label><input th:field="*{name}" placeholder="auditor"></div>
+          <div class="field"><label>说明</label><input th:field="*{description}" placeholder="审计员"></div>
+          <button class="button" type="submit">保存</button>
+        </form>
+      </section>
+    </div>
+  </main>
+</div>
+</body>
+</html>

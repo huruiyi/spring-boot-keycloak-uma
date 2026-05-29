@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>操作失败</title>
+  <link rel="stylesheet" th:href="@{/assets/admin.css}">
+</head>
+<body>
+<div class="shell">
+  <aside th:replace="~{fragments :: sidebar}"></aside>
+  <main class="main">
+    <div class="page-title"><h1>操作失败</h1></div>
+    <section class="panel">
+      <p class="notice error">请求处理失败，详细异常已写入后台日志。</p>
+      <table>
+        <tbody>
+        <tr><th>错误编号</th><td th:text="${errorId}"></td></tr>
+        <tr><th>请求路径</th><td th:text="${path}"></td></tr>
+        <tr><th>错误原因</th><td th:text="${message}"></td></tr>
+        </tbody>
+      </table>
+    </section>
+  </main>
+</div>
+</body>
+</html>

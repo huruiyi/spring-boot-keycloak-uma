@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>UMA Resource</title>
+  <link rel="stylesheet" th:href="@{/assets/admin.css}">
+</head>
+<body>
+<div class="shell">
+  <aside th:replace="~{fragments :: sidebar}"></aside>
+  <main class="main">
+    <div class="page-title"><h1>UMA Resource</h1></div>
+    <p class="notice" th:if="${message}" th:text="${message}"></p>
+    <div class="split">
+      <section class="panel">
+        <table>
+          <thead><tr><th>资源</th><th>URI</th><th>Scope</th><th>操作</th></tr></thead>
+          <tbody>
+          <tr th:each="resource : ${model.resources}">
+            <td th:text="${resource.name()}"></td>
+            <td><div th:each="uri : ${resource.uris()}" th:text="${uri}"></div></td>
+            <td><span class="tag" th:each="scope : ${resource.scopes()}" th:text="${scope}"></span></td>
+            <td>
+              <form class="inline-form" th:action="@{/resources/delete}" method="post">
+                <input type="hidden" name="name" th:value="${resource.name()}">
+                <button class="button danger" type="submit">删除</button>
+              </form>
+            </td>
+          </tr>
+          </tbody>
+        </table>
+      </section>
+      <section class="panel">
+        <h2>新增或覆盖资源</h2>
+        <form class="form" th:action="@{/resources}" th:object="${form}" method="post">
+          <div class="field"><label>资源名</label><input th:field="*{name}" placeholder="report"></div>
+          <div class="field"><label>URI，逗号分隔</label><input th:field="*{uris}" placeholder="/api/reports/*"></div>
+          <div class="field"><label>Scope，逗号分隔</label><input th:field="*{scopes}" placeholder="view,export"></div>
+          <button class="button" type="submit">保存</button>
+        </form>
+      </section>
+    </div>
+  </main>
+</div>
+</body>
+</html>

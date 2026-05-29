@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>用户维护</title>
+  <link rel="stylesheet" th:href="@{/assets/admin.css}">
+</head>
+<body>
+<div class="shell">
+  <aside th:replace="~{fragments :: sidebar}"></aside>
+  <main class="main">
+    <div class="page-title"><h1>用户维护</h1></div>
+    <p class="notice" th:if="${message}" th:text="${message}"></p>
+    <div class="split">
+      <section class="panel">
+        <table>
+          <thead><tr><th>用户名</th><th>邮箱</th><th>Realm Role</th><th>操作</th></tr></thead>
+          <tbody>
+          <tr th:each="user : ${model.users}">
+            <td th:text="${user.username()}"></td>
+            <td th:text="${user.email()}"></td>
+            <td><span class="tag" th:each="role : ${user.realmRoles()}" th:text="${role}"></span></td>
+            <td>
+              <form class="inline-form" th:action="@{/users/delete}" method="post">
+                <input type="hidden" name="username" th:value="${user.username()}">
+                <button class="button danger" type="submit">删除</button>
+              </form>
+            </td>
+          </tr>
+          </tbody>
+        </table>
+      </section>
+      <section class="panel">
+        <h2>新增或覆盖用户</h2>
+        <form class="form" th:action="@{/users}" th:object="${form}" method="post">
+          <div class="field"><label>用户名</label><input th:field="*{username}" placeholder="auditor"></div>
+          <div class="field"><label>邮箱</label><input th:field="*{email}" placeholder="auditor@example.com"></div>
+          <div class="field"><label>密码</label><input th:field="*{password}" placeholder="auditor123"></div>
+          <div class="field"><label>Realm Role，逗号分隔</label><input th:field="*{realmRoles}" placeholder="manager,user"></div>
+          <button class="button" type="submit">保存</button>
+        </form>
+      </section>
+    </div>
+  </main>
+</div>
+</body>
+</html>

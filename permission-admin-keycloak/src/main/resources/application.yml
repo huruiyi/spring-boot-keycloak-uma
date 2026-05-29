@@ -1,0 +1,31 @@
+server:
+  port: ${PERMISSION_ADMIN_KEYCLOAK_PORT:9200}
+
+spring:
+  application:
+    name: permission-admin-keycloak
+  thymeleaf:
+    cache: false
+
+app:
+  keycloak:
+    url: ${KEYCLOAK_URL:http://localhost:8080}
+    realm: ${KEYCLOAK_REALM:demo}
+    admin-user: ${KEYCLOAK_ADMIN_USER:admin}
+    admin-password: ${KEYCLOAK_ADMIN_PASSWORD:admin}
+    resource-server-client-id: ${KEYCLOAK_RESOURCE_SERVER_CLIENT_ID:demo-api}
+    managed-clients: ${KEYCLOAK_MANAGED_CLIENTS:demo-frontend,demo-api}
+    endpoint-attribute: ${KEYCLOAK_ENDPOINT_ATTRIBUTE:permissionAdmin.endpoints}
+  security:
+    username: ${PERMISSION_ADMIN_KEYCLOAK_USERNAME:admin}
+    password: ${PERMISSION_ADMIN_KEYCLOAK_PASSWORD:admin}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+
+logging:
+  file:
+    name: ${PERMISSION_ADMIN_KEYCLOAK_LOG_FILE:logs/permission-admin-keycloak.log}

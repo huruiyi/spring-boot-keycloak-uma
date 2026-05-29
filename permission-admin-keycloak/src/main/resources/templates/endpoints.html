@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>系统接口权限</title>
+  <link rel="stylesheet" th:href="@{/assets/admin.css}">
+</head>
+<body>
+<div class="shell">
+  <aside th:replace="~{fragments :: sidebar}"></aside>
+  <main class="main">
+    <div class="page-title"><h1>系统接口权限</h1></div>
+    <p class="notice" th:if="${message}" th:text="${message}"></p>
+    <div class="split">
+      <section class="panel">
+        <table>
+          <thead><tr><th>名称</th><th>方法</th><th>路径</th><th>权限</th><th>操作</th></tr></thead>
+          <tbody>
+          <tr th:each="endpoint : ${model.endpoints}">
+            <td th:text="${endpoint.name()}"></td>
+            <td th:text="${endpoint.method()}"></td>
+            <td th:text="${endpoint.path()}"></td>
+            <td><span class="tag" th:text="${endpoint.permission()}"></span></td>
+            <td>
+              <form class="inline-form" th:action="@{/endpoints/delete}" method="post">
+                <input type="hidden" name="method" th:value="${endpoint.method()}">
+                <input type="hidden" name="path" th:value="${endpoint.path()}">
+                <button class="button danger" type="submit">删除</button>
+              </form>
+            </td>
+          </tr>
+          </tbody>
+        </table>
+      </section>
+      <section class="panel">
+        <h2>新增或覆盖接口权限</h2>
+        <form class="form" th:action="@{/endpoints}" th:object="${form}" method="post">
+          <div class="field"><label>名称</label><input th:field="*{name}" placeholder="报表列表"></div>
+          <div class="field"><label>方法</label><input th:field="*{method}" placeholder="GET"></div>
+          <div class="field"><label>路径</label><input th:field="*{path}" placeholder="/api/reports"></div>
+          <div class="field"><label>权限</label><input th:field="*{permission}" placeholder="report#view"></div>
+          <button class="button" type="submit">保存</button>
+        </form>
+      </section>
+    </div>
+  </main>
+</div>
+</body>
+</html>

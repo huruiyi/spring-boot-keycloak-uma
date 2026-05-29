@@ -13,5 +13,6 @@ backend/target/
 permission-admin/target/
 permission-admin/data/
 permission-admin/permission-data/
+permission-admin-keycloak/target/
 /.arts
 /.codeartsdoer
