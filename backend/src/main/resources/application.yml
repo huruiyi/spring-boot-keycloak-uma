@@ -14,6 +14,10 @@ app:
   cors:
     allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:5173,http://localhost:8081}
 
+logging:
+  pattern:
+    level: "%5p traceId=%X{traceId:-}"
+
 management:
   endpoints:
     web:

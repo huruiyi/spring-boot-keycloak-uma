@@ -42,8 +42,8 @@ public class SecurityConfig {
     CorsConfiguration config = new CorsConfiguration();
     config.setAllowedOrigins(Arrays.stream(allowedOrigins.split(",")).map(String::trim).toList());
     config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-    config.setAllowedHeaders(List.of("Authorization", "Content-Type"));
-    config.setExposedHeaders(List.of("WWW-Authenticate"));
+    config.setAllowedHeaders(List.of("Authorization", "Content-Type", RequestTraceFilter.TRACE_ID_HEADER));
+    config.setExposedHeaders(List.of("WWW-Authenticate", RequestTraceFilter.TRACE_ID_HEADER));
     config.setAllowCredentials(false);
 
     UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();

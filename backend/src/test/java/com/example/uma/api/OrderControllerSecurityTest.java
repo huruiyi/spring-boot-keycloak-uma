@@ -1,5 +1,6 @@
 package com.example.uma.api;
 
+import com.example.uma.config.RequestTraceFilter;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -14,6 +15,7 @@ import static org.springframework.security.test.web.servlet.request.SecurityMock
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
@@ -34,6 +36,15 @@ class OrderControllerSecurityTest {
     mockMvc.perform(get("/api/orders").with(jwt().jwt(jwt -> jwt.claim("authorization", authorization("order", "view")))))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.data[0].id").value(1001));
+  }
+
+  @Test
+  void requestTraceIdIsReturnedWhenProvided() throws Exception {
+    mockMvc.perform(get("/api/orders")
+            .header(RequestTraceFilter.TRACE_ID_HEADER, "test-trace-id")
+            .with(jwt().jwt(jwt -> jwt.claim("authorization", authorization("order", "view")))))
+        .andExpect(status().isOk())
+        .andExpect(header().string(RequestTraceFilter.TRACE_ID_HEADER, "test-trace-id"));
   }
 
   @Test

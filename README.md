@@ -954,12 +954,11 @@ Get-NetTCPConnection -LocalPort 9000,5173 -ErrorAction SilentlyContinue |
 docker compose down
 ```
 
-## Frontend environment variables
+## 前端环境变量
 
-The frontend uses npm as the canonical package manager for this repo. Keep
-`frontend/package-lock.json` and do not add a second lock file.
+前端统一使用 npm 作为包管理器。保留 `frontend/package-lock.json`，不要再新增第二套 lock 文件。
 
-The frontend supports three Vite modes:
+前端支持三套环境脚本：
 
 ```powershell
 npm run dev:local
@@ -971,19 +970,18 @@ npm run build:uat
 npm run build:prod
 ```
 
-The committed environment files are:
+仓库中提交的环境文件如下：
 
 ```text
-frontend/.env       local demo defaults
-frontend/.env.uat   UAT endpoint template
-frontend/.env.prod  production endpoint template
+frontend/.env       本地 demo 默认配置
+frontend/.env.uat   UAT 环境配置模板
+frontend/.env.prod  生产环境配置模板
 ```
 
-Vite reserves `local` for `.env.*.local` override files, so the `*:local`
-scripts use Vite's default development mode while still setting
-`VITE_APP_ENV=local`.
+Vite 把 `local` 保留给 `.env.*.local` 覆盖文件使用，所以 `*:local` 脚本底层使用默认
+`development` mode，同时通过 `VITE_APP_ENV=local` 标识本地环境。
 
-The default local values match the local demo stack:
+本地默认值和当前 demo 启动地址保持一致：
 
 ```text
 VITE_APP_ENV=local
@@ -994,23 +992,38 @@ VITE_KEYCLOAK_AUDIENCE=demo-api
 VITE_API_BASE_URL=http://localhost:9000
 ```
 
-Use `frontend/.env.*.local` for per-machine secrets or endpoint overrides, for
-example `frontend/.env.development.local` or `frontend/.env.uat.local`. These
-files are intentionally ignored.
+如果需要按机器覆盖地址或敏感配置，使用 `frontend/.env.*.local`，例如
+`frontend/.env.development.local` 或 `frontend/.env.uat.local`。这些文件会被 git 忽略。
 
-## Implemented optimizations
+## 冒烟测试
 
-The current codebase includes these maintainability improvements:
+如果 Keycloak、后端、前端已经启动，可以直接执行：
 
-- Frontend Keycloak and API endpoints are loaded from Vite environment variables.
-- The repo uses npm as the canonical frontend package manager and keeps only `package-lock.json`.
-- Backend UMA permission expressions are centralized in `UmaPermissions`.
-- Backend controllers use typed request and response records instead of raw `Map<String, Object>` payloads.
-- Order creation uses bean validation for request input.
-- Backend tests cover UMA permission parsing, secured API access, forbidden access, and validation failures.
-- Spring Boot Actuator is enabled so `/actuator/health` is available, with only `health` and `info` exposed by default.
-- Local environment override files such as `frontend/.env.uat.local` are ignored.
+```powershell
+.\startup\smoke-test.ps1
+```
 
-## Optimization TODO
+如果希望脚本先启动本地 demo 栈，再执行同样检查：
 
-Only unfinished follow-up work is tracked in `OPTIMIZATION_TODO.md`.
+```powershell
+.\startup\smoke-test.ps1 -StartServices
+```
+
+冒烟测试会检查 Keycloak、后端健康端点、前端可访问性、`order#view` 的 UMA RPT 换取、
+`/api/orders` 正常链路，以及未授权请求中的后端 `X-Trace-Id` 透传。
+
+## 已实现优化
+
+当前代码库已经包含以下维护性优化：
+
+- 前端 Keycloak 和 API 地址从 Vite 环境变量读取。
+- 前端统一使用 npm，只保留 `package-lock.json`。
+- 后端 UMA 权限表达式集中维护在 `UmaPermissions`。
+- 后端 Controller 使用明确的请求和响应 record，不再直接暴露 `Map<String, Object>`。
+- 订单创建接口使用 Bean Validation 校验请求参数。
+- 后端测试覆盖 UMA 权限解析、受保护接口访问、禁止访问和参数校验失败场景。
+- 前端测试覆盖 RPT 缓存、拒绝权限缓存和 `apiFetch` 授权头。
+- 后端日志包含 `traceId`，每个请求都会生成或复用 `X-Trace-Id` 响应头。
+- 已启用 Spring Boot Actuator，默认只暴露 `health` 和 `info`，`/actuator/health` 可用于健康检查。
+- `startup/smoke-test.ps1` 可以启动本地 demo 栈，并验证 UMA 正常链路。
+- `frontend/.env.uat.local` 这类本机覆盖文件会被 git 忽略。
