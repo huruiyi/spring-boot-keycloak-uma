@@ -1027,3 +1027,15 @@ VITE_API_BASE_URL=http://localhost:9000
 - 已启用 Spring Boot Actuator，默认只暴露 `health` 和 `info`，`/actuator/health` 可用于健康检查。
 - `startup/smoke-test.ps1` 可以启动本地 demo 栈，并验证 UMA 正常链路。
 - `frontend/.env.uat.local` 这类本机覆盖文件会被 git 忽略。
+
+## 权限维护文档
+
+权限模型速查见 [PERMISSION_MODEL.md](./PERMISSION_MODEL.md)。
+
+按维护维度拆分的说明文档见 [docs/permission-maintenance/README.md](./docs/permission-maintenance/README.md)，包括：
+
+- Realm 维护
+- 用户维护
+- 策略维护
+- UMA 资源维护
+- 系统权限变更维护
