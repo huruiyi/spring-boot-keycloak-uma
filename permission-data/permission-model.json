@@ -166,5 +166,45 @@
     "method" : "POST",
     "path" : "/api/system/config",
     "permission" : "system#edit"
+  }, {
+    "name" : "编辑订单",
+    "method" : "PUT",
+    "path" : "/api/orders",
+    "permission" : "order#edit"
+  }, {
+    "name" : "导出订单",
+    "method" : "GET",
+    "path" : "/api/orders/export",
+    "permission" : "order#export"
+  }, {
+    "name" : "删除订单",
+    "method" : "DELETE",
+    "path" : "/api/orders",
+    "permission" : "order#delete"
+  }, {
+    "name" : "用户列表",
+    "method" : "GET",
+    "path" : "/api/users",
+    "permission" : "user#view"
+  }, {
+    "name" : "新建用户",
+    "method" : "POST",
+    "path" : "/api/users",
+    "permission" : "user#create"
+  }, {
+    "name" : "编辑用户",
+    "method" : "PUT",
+    "path" : "/api/users",
+    "permission" : "user#edit"
+  }, {
+    "name" : "删除用户",
+    "method" : "DELETE",
+    "path" : "/api/users",
+    "permission" : "user#delete"
+  }, {
+    "name" : "重置用户密码",
+    "method" : "POST",
+    "path" : "/api/users/reset-pwd",
+    "permission" : "user#reset_pwd"
   } ]
 }
