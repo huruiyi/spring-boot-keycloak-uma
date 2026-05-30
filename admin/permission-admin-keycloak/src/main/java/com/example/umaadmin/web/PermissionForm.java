@@ -2,6 +2,8 @@ package com.example.umaadmin.web;
 
 import jakarta.validation.constraints.NotBlank;
 
+import com.example.umaadmin.model.PermissionRuleModel;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -14,6 +16,8 @@ public class PermissionForm {
   @NotBlank
   private String scope;
   private List<String> policies = new ArrayList<>();
+  @NotBlank
+  private String decisionStrategy = PermissionRuleModel.DEFAULT_DECISION_STRATEGY;
 
   public String getName() {
     return name;
@@ -45,5 +49,13 @@ public class PermissionForm {
 
   public void setPolicies(List<String> policies) {
     this.policies = policies == null ? new ArrayList<>() : policies;
+  }
+
+  public String getDecisionStrategy() {
+    return decisionStrategy;
+  }
+
+  public void setDecisionStrategy(String decisionStrategy) {
+    this.decisionStrategy = decisionStrategy;
   }
 }

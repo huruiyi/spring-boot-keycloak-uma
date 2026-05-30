@@ -1,5 +1,9 @@
 server:
   port: ${PERMISSION_ADMIN_KEYCLOAK_PORT:9200}
+  servlet:
+    session:
+      cookie:
+        name: KEYCLOAK_ADMIN_SESSION
 
 spring:
   application:

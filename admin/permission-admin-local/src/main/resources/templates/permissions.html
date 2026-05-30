@@ -14,13 +14,14 @@
     <div class="split">
       <section class="panel">
         <table>
-          <thead><tr><th>Permission</th><th>Resource</th><th>Scope</th><th>Policy</th><th>申请格式</th><th>操作</th></tr></thead>
+          <thead><tr><th>Permission</th><th>Resource</th><th>Scope</th><th>Policy</th><th>Decision Strategy</th><th>申请格式</th><th>操作</th></tr></thead>
           <tbody>
           <tr th:each="permission : ${model.permissions}">
             <td th:text="${permission.name()}"></td>
             <td th:text="${permission.resource()}"></td>
             <td th:text="${permission.scope()}"></td>
             <td><span class="tag" th:each="policy : ${permission.policies()}" th:text="${policy}"></span></td>
+            <td><span class="tag" th:text="${permission.decisionStrategy()}"></span></td>
             <td><span class="tag" th:text="${permission.resource() + '#' + permission.scope()}"></span></td>
             <td class="actions">
               <a class="button secondary" th:href="@{/permissions(name=${permission.name()})}">编辑</a>
@@ -39,14 +40,14 @@
           <div class="field"><label>名称</label><input th:field="*{name}" th:readonly="${editing}" placeholder="perm-report-view"></div>
           <div class="field">
             <label>Resource</label>
-            <select th:field="*{resource}">
+            <select id="resource-select" th:field="*{resource}">
               <option value="">请选择 Resource</option>
               <option th:each="resource : ${model.resources}" th:value="${resource.name()}" th:text="${resource.name()}"></option>
             </select>
           </div>
           <div class="field">
             <label>Scope</label>
-            <select th:field="*{scope}">
+            <select id="scope-select" th:field="*{scope}">
               <option value="">请选择 Scope</option>
               <optgroup th:each="resource : ${model.resources}" th:label="${resource.name()}">
                 <option th:each="scope : ${resource.scopes()}" th:value="${scope}" th:text="${scope}"></option>
@@ -59,6 +60,13 @@
               <option th:each="policy : ${model.policies}" th:value="${policy.name()}" th:text="${policy.name()}"></option>
             </select>
           </div>
+          <div class="field">
+            <label>Decision Strategy</label>
+            <select th:field="*{decisionStrategy}">
+              <option value="AFFIRMATIVE">AFFIRMATIVE - 任意 Policy 满足</option>
+              <option value="UNANIMOUS">UNANIMOUS - 全部 Policy 满足</option>
+            </select>
+          </div>
           <div class="actions">
             <button class="button" type="submit">保存</button>
             <a class="button secondary" th:if="${editing}" th:href="@{/permissions}">取消</a>
@@ -68,5 +76,25 @@
     </div>
   </main>
 </div>
+<script>
+  const resourceSelect = document.getElementById('resource-select');
+  const scopeSelect = document.getElementById('scope-select');
+  function filterScopes() {
+    const selectedResource = resourceSelect.value;
+    let selectedScopeVisible = false;
+    scopeSelect.querySelectorAll('optgroup').forEach(group => {
+      const visible = !selectedResource || group.label === selectedResource;
+      group.hidden = !visible;
+      if (visible && [...group.children].some(option => option.selected)) {
+        selectedScopeVisible = true;
+      }
+    });
+    if (!selectedScopeVisible) {
+      scopeSelect.value = '';
+    }
+  }
+  resourceSelect.addEventListener('change', filterScopes);
+  filterScopes();
+</script>
 </body>
 </html>

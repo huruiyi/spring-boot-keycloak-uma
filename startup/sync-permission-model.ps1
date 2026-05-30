@@ -40,6 +40,24 @@ function Get-PermissionPolicies {
     return ,$values
 }
 
+function Get-PermissionDecisionStrategy {
+    param([object]$Permission)
+
+    if ($Permission.decisionStrategy -eq "UNANIMOUS") {
+        return "UNANIMOUS"
+    }
+    return "AFFIRMATIVE"
+}
+
+function Get-PolicyTarget {
+    param([object]$Policy)
+
+    if ($Policy.target) {
+        return $Policy.target
+    }
+    return $Policy.realmRole
+}
+
 function Invoke-KeycloakJson {
     param(
         [string]$Method,
@@ -338,24 +356,32 @@ foreach ($resource in (ConvertTo-Array $model.resources)) {
 
 Write-Host "[7/8] Sync role policies"
 foreach ($policy in (ConvertTo-Array $model.policies)) {
-    if ($policy.type -ne "role") {
+    if (@("role", "user", "client") -notcontains $policy.type) {
         throw "Unsupported policy type for $($policy.name): $($policy.type)"
+    }
+    $policyTarget = Get-PolicyTarget $policy
+    $policyBody = @{
+        name = $policy.name
+        type = $policy.type
+        logic = "POSITIVE"
+        decisionStrategy = "UNANIMOUS"
+        description = $policy.description
+    }
+    if ($policy.type -eq "user") {
+        $policyBody.users = @($policyTarget)
+    } elseif ($policy.type -eq "client") {
+        $policyBody.clients = @($policyTarget)
+    } else {
+        $policyBody.roles = @(@{ id = $policyTarget; required = $true })
     }
 
     Sync-NamedItem `
         -Kind "role policy" `
         -ListUrl "$authzBase/policy" `
-        -CreateUrl "$authzBase/policy/role" `
-        -UpdateUrlPrefix "$authzBase/policy/role" `
+        -CreateUrl "$authzBase/policy/$($policy.type)" `
+        -UpdateUrlPrefix "$authzBase/policy/$($policy.type)" `
         -Token $adminToken `
-        -Body @{
-            name = $policy.name
-            type = "role"
-            logic = "POSITIVE"
-            decisionStrategy = "UNANIMOUS"
-            roles = @(@{ id = $policy.realmRole; required = $true })
-            description = $policy.description
-        }
+        -Body $policyBody
 }
 
 Write-Host "[8/8] Sync scope permissions"
@@ -370,7 +396,7 @@ foreach ($permission in (ConvertTo-Array $model.permissions)) {
             name = $permission.name
             type = "scope"
             logic = "POSITIVE"
-            decisionStrategy = "UNANIMOUS"
+            decisionStrategy = Get-PermissionDecisionStrategy $permission
             resources = @($permission.resource)
             scopes = @($permission.scope)
             policies = Get-PermissionPolicies $permission

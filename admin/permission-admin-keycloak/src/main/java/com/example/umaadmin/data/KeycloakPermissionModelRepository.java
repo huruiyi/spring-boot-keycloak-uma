@@ -202,12 +202,14 @@ public class KeycloakPermissionModelRepository implements PermissionModelReposit
 
   private List<PolicyModel> loadPolicies(String authzBase, String token) {
     Map<String, String> roleIdToName = realmRoleIdToName(token);
+    Map<String, String> userIdToName = userIdToName(token);
+    Map<String, String> clientUuidToClientId = clientUuidToClientId(token);
     return getList(authzBase + "/policy", token).stream()
-        .filter(policy -> "role".equals(text(policy, "type")))
+        .filter(policy -> List.of("role", "user", "client").contains(text(policy, "type")))
         .map(policy -> new PolicyModel(
             text(policy, "name"),
-            "role",
-            roleFromPolicy(policy, roleIdToName),
+            text(policy, "type"),
+            policySubject(policy, roleIdToName, userIdToName, clientUuidToClientId),
             text(policy, "description")
         ))
         .toList();
@@ -243,7 +245,8 @@ public class KeycloakPermissionModelRepository implements PermissionModelReposit
               text(detail, "name"),
               resolveFirst(resources, resourceIdToName),
               resolveFirst(scopes, scopeIdToName),
-              resolveAll(policies, policyIdToName)
+              resolveAll(policies, policyIdToName),
+              text(detail, "decisionStrategy")
           );
         })
         .toList();
@@ -383,45 +386,48 @@ public class KeycloakPermissionModelRepository implements PermissionModelReposit
     Map<String, PolicyModel> previousByName = previous.getPolicies().stream()
         .collect(Collectors.toMap(PolicyModel::name, item -> item, (left, right) -> left, LinkedHashMap::new));
     for (PolicyModel policy : model.getPolicies()) {
-      if (!"role".equals(policy.type())) {
+      if (!List.of("role", "user", "client").contains(policy.type())) {
         throw new IllegalArgumentException("Unsupported policy type: " + policy.type());
       }
       PolicyModel previousPolicy = previousByName.get(policy.name());
       if (previousPolicy != null && samePolicy(previousPolicy, policy)) {
         continue;
       }
-      upsertRolePolicy(policy, authzBase, token);
+      upsertPolicy(policy, authzBase, token);
     }
     deleteMissing(previous.getPolicies().stream().map(PolicyModel::name).toList(), currentNames, authzBase + "/policy", token);
   }
 
-  private void upsertRolePolicy(PolicyModel policy, String authzBase, String token) {
-    String roleId = text(getMap(adminBase() + "/roles/" + encodePath(policy.realmRole()), token), "id");
+  private void upsertPolicy(PolicyModel policy, String authzBase, String token) {
+    Object references = policyReferences(policy, token);
+    String referenceField = policyReferenceField(policy.type());
     Map<String, Object> existing = findByName(authzBase + "/policy", policy.name(), token);
     if (existing == null) {
-      post(authzBase + "/policy/role", token, mapOf(
+      post(authzBase + "/policy/" + policy.type(), token, mapOf(
           "name", policy.name(),
-          "type", "role",
+          "type", policy.type(),
           "logic", "POSITIVE",
           "decisionStrategy", "UNANIMOUS",
-          "roles", List.of(Map.of("id", roleId, "required", true)),
+          referenceField, references,
           "description", safe(policy.description())
       ));
       return;
     }
 
     try {
+      Map<String, Object> config = new LinkedHashMap<>();
+      config.put(referenceField, objectMapper.writeValueAsString(references));
       put(authzBase + "/policy/" + keycloakId(existing), token, mapOf(
           "id", keycloakId(existing),
           "name", policy.name(),
-          "type", "role",
+          "type", policy.type(),
           "logic", "POSITIVE",
           "decisionStrategy", "UNANIMOUS",
-          "config", Map.of("roles", objectMapper.writeValueAsString(List.of(Map.of("id", roleId, "required", true)))),
+          "config", config,
           "description", safe(policy.description())
       ));
     } catch (JsonProcessingException e) {
-      throw new IllegalStateException("Failed to serialize role policy config: " + policy.name(), e);
+      throw new IllegalStateException("Failed to serialize policy config: " + policy.name(), e);
     }
   }
 
@@ -448,7 +454,7 @@ public class KeycloakPermissionModelRepository implements PermissionModelReposit
         "name", permission.name(),
         "type", "scope",
         "logic", "POSITIVE",
-        "decisionStrategy", "UNANIMOUS",
+        "decisionStrategy", permission.decisionStrategy(),
         "resources", List.of(permission.resource()),
         "scopes", List.of(permission.scope()),
         "policies", permission.policies()
@@ -458,7 +464,7 @@ public class KeycloakPermissionModelRepository implements PermissionModelReposit
   private boolean samePolicy(PolicyModel left, PolicyModel right) {
     return Objects.equals(left.name(), right.name())
         && Objects.equals(left.type(), right.type())
-        && Objects.equals(left.realmRole(), right.realmRole())
+        && Objects.equals(left.subject(), right.subject())
         && Objects.equals(safe(left.description()), safe(right.description()));
   }
 
@@ -466,7 +472,8 @@ public class KeycloakPermissionModelRepository implements PermissionModelReposit
     return Objects.equals(left.name(), right.name())
         && Objects.equals(left.resource(), right.resource())
         && Objects.equals(left.scope(), right.scope())
-        && Objects.equals(left.policies(), right.policies());
+        && Objects.equals(left.policies(), right.policies())
+        && Objects.equals(left.decisionStrategy(), right.decisionStrategy());
   }
 
   private void syncEndpoints(PermissionModel model, String clientUuid, String token) {
@@ -672,6 +679,59 @@ public class KeycloakPermissionModelRepository implements PermissionModelReposit
       roles.put(text(role, "id"), text(role, "name"));
     }
     return roles;
+  }
+
+  private Map<String, String> userIdToName(String token) {
+    Map<String, String> users = new LinkedHashMap<>();
+    for (Map<String, Object> user : getList(adminBase() + "/users", token)) {
+      users.put(text(user, "id"), text(user, "username"));
+    }
+    return users;
+  }
+
+  private Map<String, String> clientUuidToClientId(String token) {
+    Map<String, String> clients = new LinkedHashMap<>();
+    for (Map<String, Object> client : getList(adminBase() + "/clients", token)) {
+      clients.put(text(client, "id"), text(client, "clientId"));
+    }
+    return clients;
+  }
+
+  private String policySubject(
+      Map<String, Object> policy,
+      Map<String, String> roleIdToName,
+      Map<String, String> userIdToName,
+      Map<String, String> clientUuidToClientId
+  ) {
+    return switch (text(policy, "type")) {
+      case "user" -> firstPolicyReference(policy, "users", userIdToName);
+      case "client" -> firstPolicyReference(policy, "clients", clientUuidToClientId);
+      default -> roleFromPolicy(policy, roleIdToName);
+    };
+  }
+
+  private String firstPolicyReference(Map<String, Object> policy, String field, Map<String, String> idToName) {
+    List<String> values = configuredValues(policy, config(policy), field);
+    if (values.isEmpty()) {
+      return "";
+    }
+    return idToName.getOrDefault(values.getFirst(), values.getFirst());
+  }
+
+  private Object policyReferences(PolicyModel policy, String token) {
+    return switch (policy.type()) {
+      case "user" -> List.of(userId(policy.subject(), token));
+      case "client" -> List.of(clientUuid(policy.subject(), token));
+      default -> List.of(Map.of("id", text(getMap(adminBase() + "/roles/" + encodePath(policy.subject()), token), "id"), "required", true));
+    };
+  }
+
+  private String policyReferenceField(String type) {
+    return switch (type) {
+      case "user" -> "users";
+      case "client" -> "clients";
+      default -> "roles";
+    };
   }
 
   private String roleFromPolicy(Map<String, Object> policy, Map<String, String> roleIdToName) {

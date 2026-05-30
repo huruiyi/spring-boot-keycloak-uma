@@ -9,17 +9,24 @@ import java.util.List;
 
 public class PermissionRuleModel {
 
+  public static final String DEFAULT_DECISION_STRATEGY = "AFFIRMATIVE";
+
   private final String name;
   private final String resource;
   private final String scope;
   private final List<String> policies;
+  private final String decisionStrategy;
 
   public PermissionRuleModel(String name, String resource, String scope, String policy) {
-    this(name, resource, scope, policy, null);
+    this(name, resource, scope, policy, null, null);
   }
 
   public PermissionRuleModel(String name, String resource, String scope, List<String> policies) {
-    this(name, resource, scope, null, policies);
+    this(name, resource, scope, policies, null);
+  }
+
+  public PermissionRuleModel(String name, String resource, String scope, List<String> policies, String decisionStrategy) {
+    this(name, resource, scope, null, policies, decisionStrategy);
   }
 
   @JsonCreator
@@ -28,12 +35,14 @@ public class PermissionRuleModel {
       @JsonProperty("resource") String resource,
       @JsonProperty("scope") String scope,
       @JsonProperty("policy") String policy,
-      @JsonProperty("policies") List<String> policies
+      @JsonProperty("policies") List<String> policies,
+      @JsonProperty("decisionStrategy") String decisionStrategy
   ) {
     this.name = name;
     this.resource = resource;
     this.scope = scope;
     this.policies = normalizePolicies(policy, policies);
+    this.decisionStrategy = normalizeDecisionStrategy(decisionStrategy);
   }
 
   public String name() {
@@ -57,6 +66,10 @@ public class PermissionRuleModel {
     return policies;
   }
 
+  public String decisionStrategy() {
+    return decisionStrategy;
+  }
+
   public String getName() {
     return name;
   }
@@ -73,6 +86,10 @@ public class PermissionRuleModel {
     return policies;
   }
 
+  public String getDecisionStrategy() {
+    return decisionStrategy;
+  }
+
   private static List<String> normalizePolicies(String policy, List<String> policies) {
     List<String> values = new ArrayList<>();
     if (policies != null) {
@@ -82,5 +99,12 @@ public class PermissionRuleModel {
       values.add(policy);
     }
     return List.copyOf(values);
+  }
+
+  private static String normalizeDecisionStrategy(String decisionStrategy) {
+    if ("UNANIMOUS".equals(decisionStrategy)) {
+      return "UNANIMOUS";
+    }
+    return DEFAULT_DECISION_STRATEGY;
   }
 }

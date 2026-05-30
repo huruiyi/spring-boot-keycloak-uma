@@ -9,7 +9,7 @@ public class PolicyForm {
   @NotBlank
   private String type = "role";
   @NotBlank
-  private String realmRole;
+  private String target;
   private String description;
 
   public String getName() {
@@ -29,11 +29,19 @@ public class PolicyForm {
   }
 
   public String getRealmRole() {
-    return realmRole;
+    return target;
   }
 
   public void setRealmRole(String realmRole) {
-    this.realmRole = realmRole;
+    this.target = realmRole;
+  }
+
+  public String getTarget() {
+    return target;
+  }
+
+  public void setTarget(String target) {
+    this.target = target;
   }
 
   public String getDescription() {

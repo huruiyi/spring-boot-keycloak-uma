@@ -9,6 +9,11 @@ import com.example.umaadmin.model.UmaResourceModel;
 import com.example.umaadmin.model.UserModel;
 import com.example.umaadmin.service.PermissionAdminService;
 import jakarta.validation.Valid;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -16,6 +21,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
@@ -31,6 +37,38 @@ public class AdminController {
   public String dashboard(Model model) {
     model.addAttribute("model", service.model());
     return "dashboard";
+  }
+
+  @GetMapping("/model-sync")
+  public String modelSync(Model model) {
+    model.addAttribute("modelJson", "");
+    return "model-sync";
+  }
+
+  @GetMapping("/model-sync/export")
+  public ResponseEntity<String> exportModel() {
+    return ResponseEntity.ok()
+        .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=permission-model.json")
+        .contentType(MediaType.APPLICATION_JSON)
+        .body(service.modelJson());
+  }
+
+  @PostMapping("/model-sync/preview")
+  public String previewModel(@RequestParam(required = false) String modelJson, @RequestParam(required = false) MultipartFile modelFile, Model model) {
+    String json = importJson(modelJson, modelFile);
+    PermissionModel target = service.parseModel(json);
+    model.addAttribute("modelJson", json);
+    model.addAttribute("changes", service.diff(target));
+    return "model-sync";
+  }
+
+  @PostMapping("/model-sync/import")
+  public String importModel(@RequestParam(required = false) String modelJson, @RequestParam(required = false) MultipartFile modelFile, RedirectAttributes redirectAttributes) {
+    PermissionModel target = service.parseModel(importJson(modelJson, modelFile));
+    int changeCount = service.diff(target).size();
+    service.replaceModel(target);
+    redirectAttributes.addFlashAttribute("message", "模型已导入，应用变更 " + changeCount + " 项");
+    return "redirect:/model-sync";
   }
 
   @GetMapping("/roles")
@@ -139,7 +177,7 @@ public class AdminController {
           .ifPresent(policy -> {
             form.setName(policy.name());
             form.setType(policy.type());
-            form.setRealmRole(policy.realmRole());
+            form.setTarget(policy.subject());
             form.setDescription(policy.description());
           });
     }
@@ -156,7 +194,7 @@ public class AdminController {
       model.addAttribute("editing", form.getName() != null && !form.getName().isBlank());
       return "policies";
     }
-    service.addPolicy(new PolicyModel(form.getName(), form.getType(), form.getRealmRole(), form.getDescription()));
+    service.addPolicy(new PolicyModel(form.getName(), form.getType(), form.getTarget(), form.getDescription()));
     redirectAttributes.addFlashAttribute("message", "策略已保存");
     return "redirect:/policies";
   }
@@ -182,6 +220,7 @@ public class AdminController {
             form.setResource(permission.resource());
             form.setScope(permission.scope());
             form.setPolicies(permission.policies());
+            form.setDecisionStrategy(permission.decisionStrategy());
           });
     }
     model.addAttribute("model", permissionModel);
@@ -197,7 +236,13 @@ public class AdminController {
       model.addAttribute("editing", form.getName() != null && !form.getName().isBlank());
       return "permissions";
     }
-    service.addPermission(new PermissionRuleModel(form.getName(), form.getResource(), form.getScope(), form.getPolicies()));
+    service.addPermission(new PermissionRuleModel(
+        form.getName(),
+        form.getResource(),
+        form.getScope(),
+        form.getPolicies(),
+        form.getDecisionStrategy()
+    ));
     redirectAttributes.addFlashAttribute("message", "权限规则已保存");
     return "redirect:/permissions";
   }
@@ -239,5 +284,34 @@ public class AdminController {
     int generated = service.generateDefaultEndpoints();
     redirectAttributes.addFlashAttribute("message", "Generated " + generated + " default endpoint permissions");
     return "redirect:/endpoints";
+  }
+
+  @GetMapping("/analysis")
+  public String analysis(Model model) {
+    model.addAttribute("model", service.model());
+    model.addAttribute("scanCandidates", service.scanBackendEndpoints());
+    model.addAttribute("usageIssues", service.usageIssues());
+    return "analysis";
+  }
+
+  @PostMapping("/analysis/import-scanned-endpoints")
+  public String importScannedEndpoints(RedirectAttributes redirectAttributes) {
+    int imported = service.importScannedEndpoints();
+    redirectAttributes.addFlashAttribute("message", "已导入扫描接口 " + imported + " 项");
+    return "redirect:/analysis";
+  }
+
+  private String importJson(String modelJson, MultipartFile modelFile) {
+    if (modelFile != null && !modelFile.isEmpty()) {
+      try {
+        return new String(modelFile.getBytes(), StandardCharsets.UTF_8);
+      } catch (IOException e) {
+        throw new IllegalArgumentException("Failed to read uploaded permission model", e);
+      }
+    }
+    if (modelJson == null || modelJson.isBlank()) {
+      throw new IllegalArgumentException("Permission model JSON is required");
+    }
+    return modelJson;
   }
 }

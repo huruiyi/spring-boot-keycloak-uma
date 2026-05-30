@@ -28,6 +28,15 @@ function Get-PermissionPolicies {
     return ,$values
 }
 
+function Get-PermissionDecisionStrategy {
+    param([object]$Permission)
+
+    if ($Permission.decisionStrategy -eq "UNANIMOUS") {
+        return "UNANIMOUS"
+    }
+    return "AFFIRMATIVE"
+}
+
 function Invoke-KeycloakJson {
     param(
         [string]$Method,
@@ -284,19 +293,19 @@ foreach ($policy in $policies) {
 
 Write-Host "[7/7] Create scope permissions"
 $permissions = @(
-    @{ name = "perm-order-view"; resource = "order"; scope = "view"; policies = @("policy-user") },
-    @{ name = "perm-order-create"; resource = "order"; scope = "create"; policies = @("policy-user") },
-    @{ name = "perm-order-edit"; resource = "order"; scope = "edit"; policies = @("policy-user") },
-    @{ name = "perm-order-approve"; resource = "order"; scope = "approve"; policies = @("policy-manager") },
-    @{ name = "perm-order-export"; resource = "order"; scope = "export"; policies = @("policy-manager") },
-    @{ name = "perm-order-delete"; resource = "order"; scope = "delete"; policies = @("policy-admin") },
-    @{ name = "perm-user-view"; resource = "user"; scope = "view"; policies = @("policy-manager") },
-    @{ name = "perm-user-create"; resource = "user"; scope = "create"; policies = @("policy-admin") },
-    @{ name = "perm-user-edit"; resource = "user"; scope = "edit"; policies = @("policy-admin") },
-    @{ name = "perm-user-delete"; resource = "user"; scope = "delete"; policies = @("policy-admin") },
-    @{ name = "perm-user-reset-pwd"; resource = "user"; scope = "reset_pwd"; policies = @("policy-admin") },
-    @{ name = "perm-system-view"; resource = "system"; scope = "view"; policies = @("policy-manager") },
-    @{ name = "perm-system-edit"; resource = "system"; scope = "edit"; policies = @("policy-admin") }
+    @{ name = "perm-order-view"; resource = "order"; scope = "view"; policies = @("policy-user"); decisionStrategy = "AFFIRMATIVE" },
+    @{ name = "perm-order-create"; resource = "order"; scope = "create"; policies = @("policy-user"); decisionStrategy = "AFFIRMATIVE" },
+    @{ name = "perm-order-edit"; resource = "order"; scope = "edit"; policies = @("policy-user"); decisionStrategy = "AFFIRMATIVE" },
+    @{ name = "perm-order-approve"; resource = "order"; scope = "approve"; policies = @("policy-manager"); decisionStrategy = "AFFIRMATIVE" },
+    @{ name = "perm-order-export"; resource = "order"; scope = "export"; policies = @("policy-manager"); decisionStrategy = "AFFIRMATIVE" },
+    @{ name = "perm-order-delete"; resource = "order"; scope = "delete"; policies = @("policy-admin"); decisionStrategy = "AFFIRMATIVE" },
+    @{ name = "perm-user-view"; resource = "user"; scope = "view"; policies = @("policy-manager"); decisionStrategy = "AFFIRMATIVE" },
+    @{ name = "perm-user-create"; resource = "user"; scope = "create"; policies = @("policy-admin"); decisionStrategy = "AFFIRMATIVE" },
+    @{ name = "perm-user-edit"; resource = "user"; scope = "edit"; policies = @("policy-admin"); decisionStrategy = "AFFIRMATIVE" },
+    @{ name = "perm-user-delete"; resource = "user"; scope = "delete"; policies = @("policy-admin"); decisionStrategy = "AFFIRMATIVE" },
+    @{ name = "perm-user-reset-pwd"; resource = "user"; scope = "reset_pwd"; policies = @("policy-admin"); decisionStrategy = "AFFIRMATIVE" },
+    @{ name = "perm-system-view"; resource = "system"; scope = "view"; policies = @("policy-manager"); decisionStrategy = "AFFIRMATIVE" },
+    @{ name = "perm-system-edit"; resource = "system"; scope = "edit"; policies = @("policy-admin"); decisionStrategy = "AFFIRMATIVE" }
 )
 foreach ($permission in $permissions) {
     New-IfMissing `
@@ -308,7 +317,7 @@ foreach ($permission in $permissions) {
             name = $permission.name
             type = "scope"
             logic = "POSITIVE"
-            decisionStrategy = "UNANIMOUS"
+            decisionStrategy = Get-PermissionDecisionStrategy $permission
             resources = @($permission.resource)
             scopes = @($permission.scope)
             policies = Get-PermissionPolicies $permission

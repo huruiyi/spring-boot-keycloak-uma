@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>模型同步</title>
+  <link rel="stylesheet" th:href="@{/assets/admin.css}">
+</head>
+<body>
+<div class="shell">
+  <aside th:replace="~{fragments :: sidebar}"></aside>
+  <main class="main">
+    <div class="page-title">
+      <h1>模型同步</h1>
+      <a class="button secondary" th:href="@{/model-sync/export}">导出 JSON</a>
+    </div>
+    <p class="notice" th:if="${message}" th:text="${message}"></p>
+    <div class="split">
+      <section class="panel">
+        <h2>变更预览</h2>
+        <p class="muted" th:if="${changes == null}">导入前先预览，确认新增、修改、删除项后再应用。</p>
+        <p class="muted" th:if="${changes != null and changes.isEmpty()}">没有检测到差异。</p>
+        <table th:if="${changes != null and !changes.isEmpty()}">
+          <thead><tr><th>类型</th><th>对象</th><th>动作</th></tr></thead>
+          <tbody>
+          <tr th:each="change : ${changes}">
+            <td th:text="${change.section()}"></td>
+            <td th:text="${change.name()}"></td>
+            <td><span class="tag" th:text="${change.action()}"></span></td>
+          </tr>
+          </tbody>
+        </table>
+      </section>
+      <section class="panel">
+        <h2>导入 JSON</h2>
+        <form class="form" th:action="@{/model-sync/preview}" method="post" enctype="multipart/form-data">
+          <div class="field">
+            <label>选择文件</label>
+            <input type="file" name="modelFile" accept="application/json,.json">
+          </div>
+          <div class="field">
+            <label>或粘贴 JSON</label>
+            <textarea name="modelJson" rows="16" th:text="${modelJson}" placeholder="粘贴 permission-model.json 内容"></textarea>
+          </div>
+          <button class="button secondary" type="submit">预览变更</button>
+        </form>
+        <form class="form import-form" th:action="@{/model-sync/import}" method="post" enctype="multipart/form-data">
+          <input type="hidden" name="modelJson" th:value="${modelJson}">
+          <button class="button danger" type="submit" th:disabled="${changes == null}">应用导入</button>
+        </form>
+      </section>
+    </div>
+  </main>
+</div>
+</body>
+</html>

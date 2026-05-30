@@ -1,5 +1,9 @@
 server:
   port: ${PERMISSION_ADMIN_LOCAL_PORT:9100}
+  servlet:
+    session:
+      cookie:
+        name: LOCAL_ADMIN_SESSION
 
 spring:
   application:

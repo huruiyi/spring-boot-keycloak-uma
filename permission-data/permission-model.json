@@ -128,19 +128,22 @@
       "name": "policy-user",
       "type": "role",
       "realmRole": "user",
-      "description": "普通用户策略"
+      "description": "普通用户策略",
+      "target": "user"
     },
     {
       "name": "policy-manager",
       "type": "role",
       "realmRole": "manager",
-      "description": "管理人员策略"
+      "description": "管理人员策略",
+      "target": "manager"
     },
     {
       "name": "policy-admin",
       "type": "role",
       "realmRole": "admin",
-      "description": "管理员策略"
+      "description": "管理员策略",
+      "target": "admin"
     }
   ],
   "permissions": [
@@ -150,7 +153,8 @@
       "scope": "view",
       "policies": [
         "policy-user"
-      ]
+      ],
+      "decisionStrategy": "AFFIRMATIVE"
     },
     {
       "name": "perm-order-create",
@@ -158,7 +162,8 @@
       "scope": "create",
       "policies": [
         "policy-user"
-      ]
+      ],
+      "decisionStrategy": "AFFIRMATIVE"
     },
     {
       "name": "perm-order-edit",
@@ -166,7 +171,8 @@
       "scope": "edit",
       "policies": [
         "policy-user"
-      ]
+      ],
+      "decisionStrategy": "AFFIRMATIVE"
     },
     {
       "name": "perm-order-approve",
@@ -174,7 +180,8 @@
       "scope": "approve",
       "policies": [
         "policy-manager"
-      ]
+      ],
+      "decisionStrategy": "AFFIRMATIVE"
     },
     {
       "name": "perm-order-export",
@@ -182,7 +189,8 @@
       "scope": "export",
       "policies": [
         "policy-manager"
-      ]
+      ],
+      "decisionStrategy": "AFFIRMATIVE"
     },
     {
       "name": "perm-order-delete",
@@ -190,7 +198,8 @@
       "scope": "delete",
       "policies": [
         "policy-admin"
-      ]
+      ],
+      "decisionStrategy": "AFFIRMATIVE"
     },
     {
       "name": "perm-user-view",
@@ -198,7 +207,8 @@
       "scope": "view",
       "policies": [
         "policy-manager"
-      ]
+      ],
+      "decisionStrategy": "AFFIRMATIVE"
     },
     {
       "name": "perm-user-create",
@@ -206,7 +216,8 @@
       "scope": "create",
       "policies": [
         "policy-admin"
-      ]
+      ],
+      "decisionStrategy": "AFFIRMATIVE"
     },
     {
       "name": "perm-user-edit",
@@ -214,7 +225,8 @@
       "scope": "edit",
       "policies": [
         "policy-admin"
-      ]
+      ],
+      "decisionStrategy": "AFFIRMATIVE"
     },
     {
       "name": "perm-user-delete",
@@ -222,7 +234,8 @@
       "scope": "delete",
       "policies": [
         "policy-admin"
-      ]
+      ],
+      "decisionStrategy": "AFFIRMATIVE"
     },
     {
       "name": "perm-user-reset-pwd",
@@ -230,7 +243,8 @@
       "scope": "reset_pwd",
       "policies": [
         "policy-admin"
-      ]
+      ],
+      "decisionStrategy": "AFFIRMATIVE"
     },
     {
       "name": "perm-system-view",
@@ -238,7 +252,8 @@
       "scope": "view",
       "policies": [
         "policy-manager"
-      ]
+      ],
+      "decisionStrategy": "AFFIRMATIVE"
     },
     {
       "name": "perm-system-edit",
@@ -246,7 +261,8 @@
       "scope": "edit",
       "policies": [
         "policy-admin"
-      ]
+      ],
+      "decisionStrategy": "AFFIRMATIVE"
     }
   ],
   "endpoints": [
