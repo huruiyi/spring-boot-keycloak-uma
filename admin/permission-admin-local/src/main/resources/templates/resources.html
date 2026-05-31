@@ -22,7 +22,9 @@
             <td><span class="tag" th:each="scope : ${resource.scopes()}" th:text="${scope}"></span></td>
             <td class="actions">
               <a class="button secondary" th:href="@{/resources(name=${resource.name()})}">编辑</a>
-              <form class="inline-form" th:action="@{/resources/delete}" method="post">
+              <form class="inline-form" th:action="@{/resources/delete}" method="post"
+                    th:data-confirm-message="${resourceDeleteImpacts != null ? resourceDeleteImpacts[resource.name()] : '确认删除？'}"
+                    onsubmit="return confirm(this.dataset.confirmMessage)">
                 <input type="hidden" name="name" th:value="${resource.name()}">
                 <button class="button danger" type="submit">删除</button>
               </form>

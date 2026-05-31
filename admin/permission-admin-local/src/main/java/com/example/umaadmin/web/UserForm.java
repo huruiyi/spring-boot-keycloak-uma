@@ -12,7 +12,6 @@ public class UserForm {
   private String username;
   @Email
   private String email;
-  @NotBlank
   private String password;
   private List<String> realmRoles = new ArrayList<>();
 

@@ -2,17 +2,23 @@
 <html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
 <body>
 <aside class="sidebar" th:fragment="sidebar">
-  <div class="brand">权限管理后台</div>
+  <div class="brand">
+    <span class="brand-mark">权</span>
+    <span>
+      <strong>权限管理后台</strong>
+      <small>UMA Authorization</small>
+    </span>
+  </div>
   <nav class="nav">
-    <a th:href="@{/}">概览</a>
-    <a th:href="@{/roles}">Realm Role</a>
-    <a th:href="@{/users}">用户</a>
-    <a th:href="@{/resources}">UMA Resource</a>
-    <a th:href="@{/policies}">策略</a>
-    <a th:href="@{/permissions}">Permission</a>
-    <a th:href="@{/endpoints}">系统接口权限</a>
-    <a th:href="@{/analysis}">权限分析</a>
-    <a th:href="@{/model-sync}">模型同步</a>
+    <a th:href="@{/}"><span>概览</span></a>
+    <a th:href="@{/roles}"><span>Realm Role</span></a>
+    <a th:href="@{/users}"><span>用户</span></a>
+    <a th:href="@{/resources}"><span>UMA Resource</span></a>
+    <a th:href="@{/policies}"><span>策略</span></a>
+    <a th:href="@{/permissions}"><span>Permission</span></a>
+    <a th:href="@{/endpoints}"><span>系统接口权限</span></a>
+    <a th:href="@{/analysis}"><span>权限分析</span></a>
+    <a th:href="@{/model-sync}"><span>模型同步</span></a>
   </nav>
 </aside>
 </body>

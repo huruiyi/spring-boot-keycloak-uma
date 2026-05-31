@@ -16,6 +16,16 @@ app:
   security:
     username: ${PERMISSION_ADMIN_LOCAL_USERNAME:admin}
     password: ${PERMISSION_ADMIN_LOCAL_PASSWORD:admin}
+    readonly-username: ${PERMISSION_ADMIN_LOCAL_READONLY_USERNAME:viewer}
+    readonly-password: ${PERMISSION_ADMIN_LOCAL_READONLY_PASSWORD:viewer}
+    user-admin-username: ${PERMISSION_ADMIN_LOCAL_USER_ADMIN_USERNAME:user-admin}
+    user-admin-password: ${PERMISSION_ADMIN_LOCAL_USER_ADMIN_PASSWORD:user-admin}
+    policy-admin-username: ${PERMISSION_ADMIN_LOCAL_POLICY_ADMIN_USERNAME:policy-admin}
+    policy-admin-password: ${PERMISSION_ADMIN_LOCAL_POLICY_ADMIN_PASSWORD:policy-admin}
+    sync-admin-username: ${PERMISSION_ADMIN_LOCAL_SYNC_ADMIN_USERNAME:sync-admin}
+    sync-admin-password: ${PERMISSION_ADMIN_LOCAL_SYNC_ADMIN_PASSWORD:sync-admin}
+  audit:
+    file: ${PERMISSION_ADMIN_LOCAL_AUDIT_FILE:logs/permission-admin-local-audit.log}
 
 management:
   endpoints:

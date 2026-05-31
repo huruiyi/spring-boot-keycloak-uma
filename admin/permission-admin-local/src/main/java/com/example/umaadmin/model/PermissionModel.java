@@ -18,7 +18,7 @@ public class PermissionModel {
   }
 
   public void setRealmRoles(List<RealmRoleModel> realmRoles) {
-    this.realmRoles = realmRoles;
+    this.realmRoles = mutableList(realmRoles);
   }
 
   public List<UserModel> getUsers() {
@@ -26,7 +26,7 @@ public class PermissionModel {
   }
 
   public void setUsers(List<UserModel> users) {
-    this.users = users;
+    this.users = mutableList(users);
   }
 
   public List<ClientModel> getClients() {
@@ -34,7 +34,7 @@ public class PermissionModel {
   }
 
   public void setClients(List<ClientModel> clients) {
-    this.clients = clients;
+    this.clients = mutableList(clients);
   }
 
   public List<UmaResourceModel> getResources() {
@@ -42,7 +42,7 @@ public class PermissionModel {
   }
 
   public void setResources(List<UmaResourceModel> resources) {
-    this.resources = resources;
+    this.resources = mutableList(resources);
   }
 
   public List<PolicyModel> getPolicies() {
@@ -50,7 +50,7 @@ public class PermissionModel {
   }
 
   public void setPolicies(List<PolicyModel> policies) {
-    this.policies = policies;
+    this.policies = mutableList(policies);
   }
 
   public List<PermissionRuleModel> getPermissions() {
@@ -58,7 +58,7 @@ public class PermissionModel {
   }
 
   public void setPermissions(List<PermissionRuleModel> permissions) {
-    this.permissions = permissions;
+    this.permissions = mutableList(permissions);
   }
 
   public List<SystemEndpointModel> getEndpoints() {
@@ -66,6 +66,10 @@ public class PermissionModel {
   }
 
   public void setEndpoints(List<SystemEndpointModel> endpoints) {
-    this.endpoints = endpoints;
+    this.endpoints = mutableList(endpoints);
+  }
+
+  private static <T> List<T> mutableList(List<T> values) {
+    return values == null ? new ArrayList<>() : new ArrayList<>(values);
   }
 }

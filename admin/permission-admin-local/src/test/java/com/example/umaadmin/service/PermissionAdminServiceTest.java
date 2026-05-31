@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Test;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class PermissionAdminServiceTest {
 
@@ -72,6 +73,23 @@ class PermissionAdminServiceTest {
           assertThat(endpoint.method()).isEqualTo("GET");
           assertThat(endpoint.path()).isEqualTo("/api/reports/export");
         });
+  }
+
+  @Test
+  void addPermissionRejectsScopeOutsideSelectedResource() {
+    PermissionModel model = new PermissionModel();
+    model.setResources(List.of(
+        new UmaResourceModel("order", List.of("/api/orders/*"), List.of("view"))
+    ));
+    InMemoryRepository repository = new InMemoryRepository(model);
+    PermissionAdminService service = new PermissionAdminService(repository);
+
+    assertThatThrownBy(() -> service.addPermission(
+        new PermissionRuleModel("perm-order-delete", "order", "delete", "policy-admin")
+    ))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessageContaining("Scope 不属于 Resource");
+    assertThat(repository.saved).isFalse();
   }
 
   private static class InMemoryRepository implements PermissionModelRepository {

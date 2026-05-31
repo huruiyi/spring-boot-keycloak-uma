@@ -39,6 +39,11 @@ public class AdminController {
     return "dashboard";
   }
 
+  @GetMapping("/login")
+  public String login() {
+    return "login";
+  }
+
   @GetMapping("/model-sync")
   public String modelSync(Model model) {
     model.addAttribute("modelJson", "");
@@ -91,6 +96,7 @@ public class AdminController {
           });
     }
     model.addAttribute("model", permissionModel);
+    model.addAttribute("roleDeleteImpacts", service.roleDeleteImpacts());
     model.addAttribute("form", form);
     model.addAttribute("editing", editing);
     return "roles";
@@ -100,6 +106,7 @@ public class AdminController {
   public String addRole(@Valid @ModelAttribute("form") RoleForm form, BindingResult bindingResult, Model model, RedirectAttributes redirectAttributes) {
     if (bindingResult.hasErrors()) {
       model.addAttribute("model", service.model());
+      model.addAttribute("roleDeleteImpacts", service.roleDeleteImpacts());
       model.addAttribute("editing", false);
       return "roles";
     }
@@ -131,6 +138,7 @@ public class AdminController {
           });
     }
     model.addAttribute("model", permissionModel);
+    model.addAttribute("userDeleteImpacts", service.userDeleteImpacts());
     model.addAttribute("form", form);
     model.addAttribute("editing", editing);
     return "users";
@@ -140,6 +148,7 @@ public class AdminController {
   public String addUser(@Valid @ModelAttribute("form") UserForm form, BindingResult bindingResult, Model model, RedirectAttributes redirectAttributes) {
     if (bindingResult.hasErrors()) {
       model.addAttribute("model", service.model());
+      model.addAttribute("userDeleteImpacts", service.userDeleteImpacts());
       model.addAttribute("editing", false);
       return "users";
     }
@@ -172,6 +181,7 @@ public class AdminController {
           });
     }
     model.addAttribute("model", permissionModel);
+    model.addAttribute("resourceDeleteImpacts", service.resourceDeleteImpacts());
     model.addAttribute("form", form);
     model.addAttribute("editing", editing);
     return "resources";
@@ -181,6 +191,7 @@ public class AdminController {
   public String addResource(@Valid @ModelAttribute("form") ResourceForm form, BindingResult bindingResult, Model model, RedirectAttributes redirectAttributes) {
     if (bindingResult.hasErrors()) {
       model.addAttribute("model", service.model());
+      model.addAttribute("resourceDeleteImpacts", service.resourceDeleteImpacts());
       model.addAttribute("editing", form.getOriginalName() != null && !form.getOriginalName().isBlank());
       return "resources";
     }
@@ -216,6 +227,7 @@ public class AdminController {
           });
     }
     model.addAttribute("model", permissionModel);
+    model.addAttribute("policyDeleteImpacts", service.policyDeleteImpacts());
     model.addAttribute("form", form);
     model.addAttribute("editing", editing);
     return "policies";
@@ -225,6 +237,7 @@ public class AdminController {
   public String addPolicy(@Valid @ModelAttribute("form") PolicyForm form, BindingResult bindingResult, Model model, RedirectAttributes redirectAttributes) {
     if (bindingResult.hasErrors()) {
       model.addAttribute("model", service.model());
+      model.addAttribute("policyDeleteImpacts", service.policyDeleteImpacts());
       model.addAttribute("editing", form.getName() != null && !form.getName().isBlank());
       return "policies";
     }
@@ -258,6 +271,7 @@ public class AdminController {
           });
     }
     model.addAttribute("model", permissionModel);
+    model.addAttribute("permissionDeleteImpacts", service.permissionDeleteImpacts());
     model.addAttribute("form", form);
     model.addAttribute("editing", editing);
     return "permissions";
@@ -267,16 +281,25 @@ public class AdminController {
   public String addPermission(@Valid @ModelAttribute("form") PermissionForm form, BindingResult bindingResult, Model model, RedirectAttributes redirectAttributes) {
     if (bindingResult.hasErrors()) {
       model.addAttribute("model", service.model());
+      model.addAttribute("permissionDeleteImpacts", service.permissionDeleteImpacts());
       model.addAttribute("editing", form.getName() != null && !form.getName().isBlank());
       return "permissions";
     }
-    service.addPermission(new PermissionRuleModel(
-        form.getName(),
-        form.getResource(),
-        form.getScope(),
-        form.getPolicies(),
-        form.getDecisionStrategy()
-    ));
+    try {
+      service.addPermission(new PermissionRuleModel(
+          form.getName(),
+          form.getResource(),
+          form.getScope(),
+          form.getPolicies(),
+          form.getDecisionStrategy()
+      ));
+    } catch (IllegalArgumentException e) {
+      bindingResult.reject("permission.invalid", e.getMessage());
+      model.addAttribute("model", service.model());
+      model.addAttribute("permissionDeleteImpacts", service.permissionDeleteImpacts());
+      model.addAttribute("editing", form.getName() != null && !form.getName().isBlank());
+      return "permissions";
+    }
     redirectAttributes.addFlashAttribute("message", "权限规则已保存");
     return "redirect:/permissions";
   }
@@ -291,6 +314,7 @@ public class AdminController {
   @GetMapping("/endpoints")
   public String endpoints(Model model) {
     model.addAttribute("model", service.model());
+    model.addAttribute("endpointDeleteImpacts", service.endpointDeleteImpacts());
     model.addAttribute("form", new EndpointForm());
     return "endpoints";
   }
@@ -299,6 +323,7 @@ public class AdminController {
   public String addEndpoint(@Valid @ModelAttribute("form") EndpointForm form, BindingResult bindingResult, Model model, RedirectAttributes redirectAttributes) {
     if (bindingResult.hasErrors()) {
       model.addAttribute("model", service.model());
+      model.addAttribute("endpointDeleteImpacts", service.endpointDeleteImpacts());
       return "endpoints";
     }
     service.addEndpoint(new SystemEndpointModel(form.getName(), form.getMethod().toUpperCase(), form.getPath(), form.getPermission()));

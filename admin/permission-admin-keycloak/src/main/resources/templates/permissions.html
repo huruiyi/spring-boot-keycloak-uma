@@ -25,7 +25,9 @@
             <td><span class="tag" th:text="${permission.resource() + '#' + permission.scope()}"></span></td>
             <td class="actions">
               <a class="button secondary" th:href="@{/permissions(name=${permission.name()})}">编辑</a>
-              <form class="inline-form" th:action="@{/permissions/delete}" method="post">
+              <form class="inline-form" th:action="@{/permissions/delete}" method="post"
+                    th:data-confirm-message="${permissionDeleteImpacts != null ? permissionDeleteImpacts[permission.name()] : '确认删除？'}"
+                    onsubmit="return confirm(this.dataset.confirmMessage)">
                 <input type="hidden" name="name" th:value="${permission.name()}">
                 <button class="button danger" type="submit">删除</button>
               </form>
@@ -37,6 +39,9 @@
       <section class="panel">
         <h2 th:text="${editing} ? '编辑 Permission' : '新增 Permission'">新增 Permission</h2>
         <form class="form" th:action="@{/permissions}" th:object="${form}" method="post">
+          <div class="notice error" th:if="${#fields.hasAnyErrors()}">
+            <div th:each="err : ${#fields.errors('*')}" th:text="${err}"></div>
+          </div>
           <div class="field"><label>名称</label><input th:field="*{name}" th:readonly="${editing}" placeholder="perm-report-view"></div>
           <div class="field">
             <label>Resource</label>

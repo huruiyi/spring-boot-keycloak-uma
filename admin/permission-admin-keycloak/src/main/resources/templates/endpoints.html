@@ -27,7 +27,9 @@
             <td th:text="${endpoint.path()}"></td>
             <td><span class="tag" th:text="${endpoint.permission()}"></span></td>
             <td>
-              <form class="inline-form" th:action="@{/endpoints/delete}" method="post">
+              <form class="inline-form" th:action="@{/endpoints/delete}" method="post"
+                    th:data-confirm-message="${endpointDeleteImpacts != null ? endpointDeleteImpacts[endpoint.method() + ' ' + endpoint.path()] : '确认删除？'}"
+                    onsubmit="return confirm(this.dataset.confirmMessage)">
                 <input type="hidden" name="method" th:value="${endpoint.method()}">
                 <input type="hidden" name="path" th:value="${endpoint.path()}">
                 <button class="button danger" type="submit">删除</button>

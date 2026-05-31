@@ -23,7 +23,9 @@
             <td th:text="${policy.description()}"></td>
             <td class="actions">
               <a class="button secondary" th:href="@{/policies(name=${policy.name()})}">编辑</a>
-              <form class="inline-form" th:action="@{/policies/delete}" method="post">
+              <form class="inline-form" th:action="@{/policies/delete}" method="post"
+                    th:data-confirm-message="${policyDeleteImpacts != null ? policyDeleteImpacts[policy.name()] : '确认删除？'}"
+                    onsubmit="return confirm(this.dataset.confirmMessage)">
                 <input type="hidden" name="name" th:value="${policy.name()}">
                 <button class="button danger" type="submit">删除</button>
               </form>
@@ -38,7 +40,7 @@
           <div class="field"><label>策略名</label><input th:field="*{name}" th:readonly="${editing}" placeholder="policy-auditor"></div>
           <div class="field">
             <label>类型</label>
-            <select th:field="*{type}">
+            <select id="policy-type-select" th:field="*{type}">
               <option value="role">role</option>
               <option value="user">user</option>
               <option value="client">client</option>
@@ -46,15 +48,15 @@
           </div>
           <div class="field">
             <label>授权目标</label>
-            <select th:field="*{target}">
+            <select id="policy-target-select" th:field="*{target}">
               <option value="">请选择授权目标</option>
-              <optgroup label="Realm Role">
-              <option th:each="role : ${model.realmRoles}" th:value="${role.name()}" th:text="${role.name()}"></option>
+              <optgroup label="Realm Role" data-policy-type="role">
+                <option th:each="role : ${model.realmRoles}" th:value="${role.name()}" th:text="${role.name()}"></option>
               </optgroup>
-              <optgroup label="用户">
+              <optgroup label="用户" data-policy-type="user">
                 <option th:each="user : ${model.users}" th:value="${user.username()}" th:text="${user.username()}"></option>
               </optgroup>
-              <optgroup label="Client">
+              <optgroup label="Client" data-policy-type="client">
                 <option th:each="client : ${model.clients}" th:value="${client.clientId()}" th:text="${client.clientId()}"></option>
               </optgroup>
             </select>
@@ -69,5 +71,25 @@
     </div>
   </main>
 </div>
+<script>
+  const policyTypeSelect = document.getElementById('policy-type-select');
+  const policyTargetSelect = document.getElementById('policy-target-select');
+  function filterPolicyTargets() {
+    const selectedType = policyTypeSelect.value || 'role';
+    let selectedTargetVisible = false;
+    policyTargetSelect.querySelectorAll('optgroup').forEach(group => {
+      const visible = group.dataset.policyType === selectedType;
+      group.hidden = !visible;
+      if (visible && [...group.children].some(option => option.selected)) {
+        selectedTargetVisible = true;
+      }
+    });
+    if (!selectedTargetVisible) {
+      policyTargetSelect.value = '';
+    }
+  }
+  policyTypeSelect.addEventListener('change', filterPolicyTargets);
+  filterPolicyTargets();
+</script>
 </body>
 </html>

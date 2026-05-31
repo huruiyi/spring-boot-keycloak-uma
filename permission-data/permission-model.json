@@ -1,348 +1,226 @@
 {
-  "realmRoles": [
-    {
-      "name": "admin",
-      "description": "系统管理员"
-    },
-    {
-      "name": "manager",
-      "description": "管理人员"
-    },
-    {
-      "name": "user",
-      "description": "普通用户"
-    },
-    {
-      "name": "auditor",
-      "description": "审计员"
-    }
-  ],
-  "users": [
-    {
-      "username": "admin",
-      "email": "admin@example.com",
-      "password": "admin123",
-      "realmRoles": [
-        "admin",
-        "manager",
-        "user"
-      ]
-    },
-    {
-      "username": "manager",
-      "email": "manager@example.com",
-      "password": "manager123",
-      "realmRoles": [
-        "manager",
-        "user"
-      ]
-    },
-    {
-      "username": "staff",
-      "email": "staff@example.com",
-      "password": "staff123",
-      "realmRoles": [
-        "user"
-      ]
-    },
-    {
-      "username": "auditor",
-      "email": "auditor@xx.com",
-      "password": "auditor@xx.com",
-      "realmRoles": [
-        "manager",
-        "user",
-        "auditor"
-      ]
-    }
-  ],
-  "clients": [
-    {
-      "clientId": "demo-frontend",
-      "type": "public",
-      "description": "前端登录和按需申请 RPT",
-      "defaultClientScopes": [
-        "profile",
-        "email",
-        "roles"
-      ],
-      "realmRoleScopeMappings": [
-        "admin",
-        "manager",
-        "user"
-      ]
-    },
-    {
-      "clientId": "demo-api",
-      "type": "confidential-resource-server",
-      "description": "UMA 资源服务器",
-      "defaultClientScopes": [
-        "profile",
-        "email",
-        "roles"
-      ],
-      "realmRoleScopeMappings": []
-    }
-  ],
-  "resources": [
-    {
-      "name": "order",
-      "uris": [
-        "/api/orders/*"
-      ],
-      "scopes": [
-        "view",
-        "create",
-        "edit",
-        "delete",
-        "approve",
-        "export"
-      ]
-    },
-    {
-      "name": "user",
-      "uris": [
-        "/api/users/*"
-      ],
-      "scopes": [
-        "view",
-        "create",
-        "edit",
-        "delete",
-        "reset_pwd"
-      ]
-    },
-    {
-      "name": "system",
-      "uris": [
-        "/api/system/*"
-      ],
-      "scopes": [
-        "view",
-        "edit"
-      ]
-    }
-  ],
-  "policies": [
-    {
-      "name": "policy-user",
-      "type": "role",
-      "realmRole": "user",
-      "description": "普通用户策略",
-      "target": "user"
-    },
-    {
-      "name": "policy-manager",
-      "type": "role",
-      "realmRole": "manager",
-      "description": "管理人员策略",
-      "target": "manager"
-    },
-    {
-      "name": "policy-admin",
-      "type": "role",
-      "realmRole": "admin",
-      "description": "管理员策略",
-      "target": "admin"
-    }
-  ],
-  "permissions": [
-    {
-      "name": "perm-order-view",
-      "resource": "order",
-      "scope": "view",
-      "policies": [
-        "policy-user"
-      ],
-      "decisionStrategy": "AFFIRMATIVE"
-    },
-    {
-      "name": "perm-order-create",
-      "resource": "order",
-      "scope": "create",
-      "policies": [
-        "policy-user"
-      ],
-      "decisionStrategy": "AFFIRMATIVE"
-    },
-    {
-      "name": "perm-order-edit",
-      "resource": "order",
-      "scope": "edit",
-      "policies": [
-        "policy-user"
-      ],
-      "decisionStrategy": "AFFIRMATIVE"
-    },
-    {
-      "name": "perm-order-approve",
-      "resource": "order",
-      "scope": "approve",
-      "policies": [
-        "policy-manager"
-      ],
-      "decisionStrategy": "AFFIRMATIVE"
-    },
-    {
-      "name": "perm-order-export",
-      "resource": "order",
-      "scope": "export",
-      "policies": [
-        "policy-manager"
-      ],
-      "decisionStrategy": "AFFIRMATIVE"
-    },
-    {
-      "name": "perm-order-delete",
-      "resource": "order",
-      "scope": "delete",
-      "policies": [
-        "policy-admin"
-      ],
-      "decisionStrategy": "AFFIRMATIVE"
-    },
-    {
-      "name": "perm-user-view",
-      "resource": "user",
-      "scope": "view",
-      "policies": [
-        "policy-manager"
-      ],
-      "decisionStrategy": "AFFIRMATIVE"
-    },
-    {
-      "name": "perm-user-create",
-      "resource": "user",
-      "scope": "create",
-      "policies": [
-        "policy-admin"
-      ],
-      "decisionStrategy": "AFFIRMATIVE"
-    },
-    {
-      "name": "perm-user-edit",
-      "resource": "user",
-      "scope": "edit",
-      "policies": [
-        "policy-admin"
-      ],
-      "decisionStrategy": "AFFIRMATIVE"
-    },
-    {
-      "name": "perm-user-delete",
-      "resource": "user",
-      "scope": "delete",
-      "policies": [
-        "policy-admin"
-      ],
-      "decisionStrategy": "AFFIRMATIVE"
-    },
-    {
-      "name": "perm-user-reset-pwd",
-      "resource": "user",
-      "scope": "reset_pwd",
-      "policies": [
-        "policy-admin"
-      ],
-      "decisionStrategy": "AFFIRMATIVE"
-    },
-    {
-      "name": "perm-system-view",
-      "resource": "system",
-      "scope": "view",
-      "policies": [
-        "policy-manager"
-      ],
-      "decisionStrategy": "AFFIRMATIVE"
-    },
-    {
-      "name": "perm-system-edit",
-      "resource": "system",
-      "scope": "edit",
-      "policies": [
-        "policy-admin"
-      ],
-      "decisionStrategy": "AFFIRMATIVE"
-    }
-  ],
-  "endpoints": [
-    {
-      "name": "订单列表",
-      "method": "GET",
-      "path": "/api/orders",
-      "permission": "order#view"
-    },
-    {
-      "name": "新建订单",
-      "method": "POST",
-      "path": "/api/orders",
-      "permission": "order#create"
-    },
-    {
-      "name": "审批订单",
-      "method": "POST",
-      "path": "/api/orders/approve",
-      "permission": "order#approve"
-    },
-    {
-      "name": "查看系统配置",
-      "method": "GET",
-      "path": "/api/system/config",
-      "permission": "system#view"
-    },
-    {
-      "name": "保存系统配置",
-      "method": "POST",
-      "path": "/api/system/config",
-      "permission": "system#edit"
-    },
-    {
-      "name": "编辑订单",
-      "method": "PUT",
-      "path": "/api/orders",
-      "permission": "order#edit"
-    },
-    {
-      "name": "导出订单",
-      "method": "GET",
-      "path": "/api/orders/export",
-      "permission": "order#export"
-    },
-    {
-      "name": "删除订单",
-      "method": "DELETE",
-      "path": "/api/orders",
-      "permission": "order#delete"
-    },
-    {
-      "name": "用户列表",
-      "method": "GET",
-      "path": "/api/users",
-      "permission": "user#view"
-    },
-    {
-      "name": "新建用户",
-      "method": "POST",
-      "path": "/api/users",
-      "permission": "user#create"
-    },
-    {
-      "name": "编辑用户",
-      "method": "PUT",
-      "path": "/api/users",
-      "permission": "user#edit"
-    },
-    {
-      "name": "删除用户",
-      "method": "DELETE",
-      "path": "/api/users",
-      "permission": "user#delete"
-    },
-    {
-      "name": "重置用户密码",
-      "method": "POST",
-      "path": "/api/users/reset-pwd",
-      "permission": "user#reset_pwd"
-    }
-  ]
+  "realmRoles" : [ {
+    "name" : "admin",
+    "description" : "系统管理员"
+  }, {
+    "name" : "manager",
+    "description" : "管理人员"
+  }, {
+    "name" : "user",
+    "description" : "普通用户"
+  }, {
+    "name" : "auditor",
+    "description" : "审计员"
+  } ],
+  "users" : [ {
+    "username" : "admin",
+    "email" : "admin@example.com",
+    "password" : "admin123",
+    "realmRoles" : [ "admin", "manager", "user" ]
+  }, {
+    "username" : "manager",
+    "email" : "manager@example.com",
+    "password" : "manager123",
+    "realmRoles" : [ "manager", "user" ]
+  }, {
+    "username" : "staff",
+    "email" : "staff@example.com",
+    "password" : "staff123",
+    "realmRoles" : [ "user" ]
+  }, {
+    "username" : "auditor",
+    "email" : "auditor@xx.com",
+    "password" : "auditor@xx.com",
+    "realmRoles" : [ "manager", "user", "auditor" ]
+  } ],
+  "clients" : [ {
+    "clientId" : "demo-frontend",
+    "type" : "public",
+    "description" : "前端登录和按需申请 RPT",
+    "defaultClientScopes" : [ "profile", "email", "roles" ],
+    "realmRoleScopeMappings" : [ "admin", "manager", "user" ]
+  }, {
+    "clientId" : "demo-api",
+    "type" : "confidential-resource-server",
+    "description" : "UMA 资源服务器",
+    "defaultClientScopes" : [ "profile", "email", "roles" ],
+    "realmRoleScopeMappings" : [ ]
+  } ],
+  "resources" : [ {
+    "name" : "order",
+    "uris" : [ "/api/orders/*" ],
+    "scopes" : [ "view", "create", "edit", "delete", "approve", "export" ]
+  }, {
+    "name" : "user",
+    "uris" : [ "/api/users/*" ],
+    "scopes" : [ "view", "create", "edit", "delete", "reset_pwd" ]
+  }, {
+    "name" : "system",
+    "uris" : [ "/api/system/*" ],
+    "scopes" : [ "view", "edit", "reset_pwd" ]
+  } ],
+  "policies" : [ {
+    "name" : "policy-user",
+    "type" : "role",
+    "realmRole" : "user",
+    "target" : "user",
+    "description" : "普通用户策略"
+  }, {
+    "name" : "policy-manager",
+    "type" : "role",
+    "realmRole" : "manager",
+    "target" : "manager",
+    "description" : "管理人员策略"
+  }, {
+    "name" : "policy-admin",
+    "type" : "role",
+    "realmRole" : "admin",
+    "target" : "admin",
+    "description" : "管理员策略"
+  } ],
+  "permissions" : [ {
+    "name" : "perm-order-view",
+    "resource" : "order",
+    "scope" : "view",
+    "policies" : [ "policy-user" ],
+    "decisionStrategy" : "AFFIRMATIVE"
+  }, {
+    "name" : "perm-order-create",
+    "resource" : "order",
+    "scope" : "create",
+    "policies" : [ "policy-user" ],
+    "decisionStrategy" : "AFFIRMATIVE"
+  }, {
+    "name" : "perm-order-edit",
+    "resource" : "order",
+    "scope" : "edit",
+    "policies" : [ "policy-user" ],
+    "decisionStrategy" : "AFFIRMATIVE"
+  }, {
+    "name" : "perm-order-approve",
+    "resource" : "order",
+    "scope" : "approve",
+    "policies" : [ "policy-manager" ],
+    "decisionStrategy" : "AFFIRMATIVE"
+  }, {
+    "name" : "perm-order-export",
+    "resource" : "order",
+    "scope" : "export",
+    "policies" : [ "policy-manager" ],
+    "decisionStrategy" : "AFFIRMATIVE"
+  }, {
+    "name" : "perm-order-delete",
+    "resource" : "order",
+    "scope" : "delete",
+    "policies" : [ "policy-admin" ],
+    "decisionStrategy" : "AFFIRMATIVE"
+  }, {
+    "name" : "perm-user-view",
+    "resource" : "user",
+    "scope" : "view",
+    "policies" : [ "policy-manager" ],
+    "decisionStrategy" : "AFFIRMATIVE"
+  }, {
+    "name" : "perm-user-create",
+    "resource" : "user",
+    "scope" : "create",
+    "policies" : [ "policy-admin" ],
+    "decisionStrategy" : "AFFIRMATIVE"
+  }, {
+    "name" : "perm-user-edit",
+    "resource" : "user",
+    "scope" : "edit",
+    "policies" : [ "policy-admin" ],
+    "decisionStrategy" : "AFFIRMATIVE"
+  }, {
+    "name" : "perm-user-delete",
+    "resource" : "user",
+    "scope" : "delete",
+    "policies" : [ "policy-admin" ],
+    "decisionStrategy" : "AFFIRMATIVE"
+  }, {
+    "name" : "perm-user-reset-pwd",
+    "resource" : "user",
+    "scope" : "reset_pwd",
+    "policies" : [ "policy-admin" ],
+    "decisionStrategy" : "AFFIRMATIVE"
+  }, {
+    "name" : "perm-system-view",
+    "resource" : "system",
+    "scope" : "view",
+    "policies" : [ "policy-manager" ],
+    "decisionStrategy" : "AFFIRMATIVE"
+  }, {
+    "name" : "perm-system-edit",
+    "resource" : "system",
+    "scope" : "edit",
+    "policies" : [ "policy-admin" ],
+    "decisionStrategy" : "AFFIRMATIVE"
+  } ],
+  "endpoints" : [ {
+    "name" : "订单列表",
+    "method" : "GET",
+    "path" : "/api/orders",
+    "permission" : "order#view"
+  }, {
+    "name" : "新建订单",
+    "method" : "POST",
+    "path" : "/api/orders",
+    "permission" : "order#create"
+  }, {
+    "name" : "审批订单",
+    "method" : "POST",
+    "path" : "/api/orders/approve",
+    "permission" : "order#approve"
+  }, {
+    "name" : "查看系统配置",
+    "method" : "GET",
+    "path" : "/api/system/config",
+    "permission" : "system#view"
+  }, {
+    "name" : "保存系统配置",
+    "method" : "POST",
+    "path" : "/api/system/config",
+    "permission" : "system#edit"
+  }, {
+    "name" : "编辑订单",
+    "method" : "PUT",
+    "path" : "/api/orders",
+    "permission" : "order#edit"
+  }, {
+    "name" : "导出订单",
+    "method" : "GET",
+    "path" : "/api/orders/export",
+    "permission" : "order#export"
+  }, {
+    "name" : "删除订单",
+    "method" : "DELETE",
+    "path" : "/api/orders",
+    "permission" : "order#delete"
+  }, {
+    "name" : "用户列表",
+    "method" : "GET",
+    "path" : "/api/users",
+    "permission" : "user#view"
+  }, {
+    "name" : "新建用户",
+    "method" : "POST",
+    "path" : "/api/users",
+    "permission" : "user#create"
+  }, {
+    "name" : "编辑用户",
+    "method" : "PUT",
+    "path" : "/api/users",
+    "permission" : "user#edit"
+  }, {
+    "name" : "删除用户",
+    "method" : "DELETE",
+    "path" : "/api/users",
+    "permission" : "user#delete"
+  }, {
+    "name" : "重置用户密码",
+    "method" : "POST",
+    "path" : "/api/users/reset-pwd",
+    "permission" : "user#reset_pwd"
+  } ]
 }

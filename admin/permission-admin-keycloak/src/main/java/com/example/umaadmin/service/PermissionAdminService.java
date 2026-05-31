@@ -162,6 +162,7 @@ public class PermissionAdminService {
 
   public void addPermission(PermissionRuleModel permission) {
     PermissionModel model = repository.get();
+    validatePermissionScope(model, permission);
     model.getPermissions().removeIf(item -> item.name().equals(permission.name()));
     model.getPermissions().add(permission);
     repository.save(model);
@@ -184,6 +185,94 @@ public class PermissionAdminService {
     PermissionModel model = repository.get();
     model.getEndpoints().removeIf(item -> item.method().equals(method) && item.path().equals(path));
     repository.save(model);
+  }
+
+  public Map<String, String> roleDeleteImpacts() {
+    PermissionModel model = repository.get();
+    Map<String, String> impacts = new LinkedHashMap<>();
+    for (RealmRoleModel role : model.getRealmRoles()) {
+      String name = role.name();
+      List<String> users = model.getUsers().stream()
+          .filter(user -> user.realmRoles().contains(name))
+          .map(UserModel::username)
+          .toList();
+      List<String> policies = model.getPolicies().stream()
+          .filter(policy -> "role".equals(policy.type()) && name.equals(policy.subject()))
+          .map(PolicyModel::name)
+          .toList();
+      impacts.put(name, "确认删除 Realm Role " + name + "？\n关联用户: " + joinOrNone(users) + "\n关联策略: " + joinOrNone(policies));
+    }
+    return impacts;
+  }
+
+  public Map<String, String> userDeleteImpacts() {
+    PermissionModel model = repository.get();
+    Map<String, String> impacts = new LinkedHashMap<>();
+    for (UserModel user : model.getUsers()) {
+      String username = user.username();
+      List<String> policies = model.getPolicies().stream()
+          .filter(policy -> "user".equals(policy.type()) && username.equals(policy.subject()))
+          .map(PolicyModel::name)
+          .toList();
+      impacts.put(username, "确认删除用户 " + username + "？\n关联策略: " + joinOrNone(policies));
+    }
+    return impacts;
+  }
+
+  public Map<String, String> resourceDeleteImpacts() {
+    PermissionModel model = repository.get();
+    Map<String, String> impacts = new LinkedHashMap<>();
+    for (UmaResourceModel resource : model.getResources()) {
+      String name = resource.name();
+      List<String> permissions = model.getPermissions().stream()
+          .filter(permission -> name.equals(permission.resource()))
+          .map(PermissionRuleModel::name)
+          .toList();
+      List<String> endpoints = model.getEndpoints().stream()
+          .filter(endpoint -> endpoint.permission() != null && endpoint.permission().startsWith(name + "#"))
+          .map(endpoint -> endpoint.method() + " " + endpoint.path())
+          .toList();
+      impacts.put(name, "确认删除 Resource " + name + "？\n关联 Permission: " + joinOrNone(permissions) + "\n关联接口: " + joinOrNone(endpoints));
+    }
+    return impacts;
+  }
+
+  public Map<String, String> policyDeleteImpacts() {
+    PermissionModel model = repository.get();
+    Map<String, String> impacts = new LinkedHashMap<>();
+    for (PolicyModel policy : model.getPolicies()) {
+      String name = policy.name();
+      List<String> permissions = model.getPermissions().stream()
+          .filter(permission -> permission.policies().contains(name))
+          .map(PermissionRuleModel::name)
+          .toList();
+      impacts.put(name, "确认删除 Policy " + name + "？\n关联 Permission: " + joinOrNone(permissions));
+    }
+    return impacts;
+  }
+
+  public Map<String, String> permissionDeleteImpacts() {
+    PermissionModel model = repository.get();
+    Map<String, String> impacts = new LinkedHashMap<>();
+    for (PermissionRuleModel permission : model.getPermissions()) {
+      String expression = permission.resource() + "#" + permission.scope();
+      List<String> endpoints = model.getEndpoints().stream()
+          .filter(endpoint -> expression.equals(endpoint.permission()))
+          .map(endpoint -> endpoint.method() + " " + endpoint.path())
+          .toList();
+      impacts.put(permission.name(), "确认删除 Permission " + permission.name() + "？\n申请格式: " + expression + "\n关联接口: " + joinOrNone(endpoints));
+    }
+    return impacts;
+  }
+
+  public Map<String, String> endpointDeleteImpacts() {
+    PermissionModel model = repository.get();
+    Map<String, String> impacts = new LinkedHashMap<>();
+    for (SystemEndpointModel endpoint : model.getEndpoints()) {
+      String key = endpoint.method() + " " + endpoint.path();
+      impacts.put(key, "确认删除接口权限 " + key + "？\n权限: " + endpoint.permission());
+    }
+    return impacts;
   }
 
   public List<EndpointScanCandidate> scanBackendEndpoints() {
@@ -347,6 +436,20 @@ public class PermissionAdminService {
         || "create".equals(normalizedScope)
         || "edit".equals(normalizedScope)
         || "delete".equals(normalizedScope);
+  }
+
+  private void validatePermissionScope(PermissionModel model, PermissionRuleModel permission) {
+    UmaResourceModel resource = model.getResources().stream()
+        .filter(item -> item.name().equals(permission.resource()))
+        .findFirst()
+        .orElseThrow(() -> new IllegalArgumentException("Resource 不存在: " + permission.resource()));
+    if (!resource.scopes().contains(permission.scope())) {
+      throw new IllegalArgumentException("Scope 不属于 Resource: " + permission.resource() + "#" + permission.scope());
+    }
+  }
+
+  private String joinOrNone(List<String> values) {
+    return values.isEmpty() ? "无" : String.join(", ", values);
   }
 
   private List<EndpointScanCandidate> scanController(Path file, Map<String, String> permissions, Set<String> existing) {

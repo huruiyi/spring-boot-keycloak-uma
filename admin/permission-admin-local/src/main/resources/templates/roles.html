@@ -20,7 +20,9 @@
             <td th:text="${role.name()}"></td>
             <td th:text="${role.description()}"></td>
             <td>
-              <form class="inline-form" th:action="@{/roles/delete}" method="post">
+              <form class="inline-form" th:action="@{/roles/delete}" method="post"
+                    th:data-confirm-message="${roleDeleteImpacts != null ? roleDeleteImpacts[role.name()] : '确认删除？'}"
+                    onsubmit="return confirm(this.dataset.confirmMessage)">
                 <input type="hidden" name="name" th:value="${role.name()}">
                 <button class="button danger" type="submit">删除</button>
               </form>

@@ -22,7 +22,9 @@
             <td><span class="tag" th:each="role : ${user.realmRoles()}" th:text="${role}"></span></td>
             <td class="actions">
               <a class="button secondary" th:href="@{/users(username=${user.username()})}">编辑</a>
-              <form class="inline-form" th:action="@{/users/delete}" method="post">
+              <form class="inline-form" th:action="@{/users/delete}" method="post"
+                    th:data-confirm-message="${userDeleteImpacts != null ? userDeleteImpacts[user.username()] : '确认删除？'}"
+                    onsubmit="return confirm(this.dataset.confirmMessage)">
                 <input type="hidden" name="username" th:value="${user.username()}">
                 <button class="button danger" type="submit">删除</button>
               </form>
