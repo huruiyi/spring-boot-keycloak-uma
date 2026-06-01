@@ -4,6 +4,7 @@ import { RouterLink, RouterView, useRoute, useRouter } from "vue-router";
 import { LogOut, PackageCheck, Settings, ShieldCheck } from "lucide-vue-next";
 import { keycloak } from "./services/auth";
 import { isRptCacheEnabled, loadPermissionMap, setRptCacheEnabled } from "./services/uma";
+import { loadUiPermissions, type UiPermission } from "./services/uiPermissions";
 
 const route = useRoute();
 const router = useRouter();
@@ -13,22 +14,26 @@ const permissionLoading = ref(true);
 const rptCacheEnabled = ref(isRptCacheEnabled());
 const viewReloadKey = ref(0);
 
-const menus = [
-  {
+const pageMeta = {
+  orders: {
     path: "/orders",
-    label: "订单",
-    permission: "order#view",
     icon: PackageCheck
   },
-  {
+  system: {
     path: "/system",
-    label: "系统",
-    permission: "system#view",
     icon: Settings
   }
-];
+} as const;
 
-const visibleMenus = computed(() => menus.filter((menu) => menuPermissions.value[menu.permission]));
+type MenuItem = UiPermission & {
+  path: string;
+  label: string;
+  icon: typeof PackageCheck;
+};
+
+const menus = ref<MenuItem[]>([]);
+
+const visibleMenus = computed(() => menus.value.filter((menu) => menuPermissions.value[menu.permission]));
 
 function logout() {
   keycloak.logout({ redirectUri: window.location.origin });
@@ -36,10 +41,22 @@ function logout() {
 
 async function loadMenus() {
   permissionLoading.value = true;
-  menuPermissions.value = await loadPermissionMap(menus.map((menu) => menu.permission));
+  const catalog = await loadUiPermissions();
+  menus.value = catalog
+    .filter((item) => item.type === "menu" && item.page in pageMeta)
+    .map((item) => {
+      const meta = pageMeta[item.page as keyof typeof pageMeta];
+      return {
+        ...item,
+        path: meta.path,
+        label: item.name.replace(/菜单$/, ""),
+        icon: meta.icon
+      };
+    });
+  menuPermissions.value = await loadPermissionMap(menus.value.map((menu) => menu.permission));
   permissionLoading.value = false;
 
-  const currentMenu = menus.find((menu) => route.path.startsWith(menu.path));
+  const currentMenu = menus.value.find((menu) => route.path.startsWith(menu.path));
   if (currentMenu && !menuPermissions.value[currentMenu.permission]) {
     const firstMenu = visibleMenus.value[0];
     if (firstMenu) {

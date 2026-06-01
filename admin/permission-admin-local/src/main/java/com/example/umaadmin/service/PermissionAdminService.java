@@ -7,6 +7,7 @@ import com.example.umaadmin.model.PolicyModel;
 import com.example.umaadmin.model.RealmRoleModel;
 import com.example.umaadmin.model.SystemEndpointModel;
 import com.example.umaadmin.model.UmaResourceModel;
+import com.example.umaadmin.model.UiPermissionModel;
 import com.example.umaadmin.model.UserModel;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -73,6 +74,7 @@ public class PermissionAdminService {
   }
 
   public void replaceModel(PermissionModel model) {
+    validateUiPermissions(model);
     repository.save(model);
   }
 
@@ -85,6 +87,7 @@ public class PermissionAdminService {
     compare(changes, "Policy", current.getPolicies(), target.getPolicies(), PolicyModel::name);
     compare(changes, "Permission", current.getPermissions(), target.getPermissions(), PermissionRuleModel::name);
     compare(changes, "Endpoint", current.getEndpoints(), target.getEndpoints(), endpoint -> endpoint.method() + " " + endpoint.path());
+    compare(changes, "UI Permission", current.getUiPermissions(), target.getUiPermissions(), UiPermissionModel::code);
     return changes.stream()
         .sorted(Comparator.comparing(ModelChange::section).thenComparing(ModelChange::name).thenComparing(ModelChange::action))
         .toList();
@@ -194,6 +197,20 @@ public class PermissionAdminService {
   public void deleteEndpoint(String method, String path) {
     PermissionModel model = repository.get();
     model.getEndpoints().removeIf(item -> item.method().equals(method) && item.path().equals(path));
+    repository.save(model);
+  }
+
+  public void addUiPermission(UiPermissionModel uiPermission) {
+    PermissionModel model = repository.get();
+    validateUiPermission(model, uiPermission);
+    model.getUiPermissions().removeIf(item -> item.code().equals(uiPermission.code()));
+    model.getUiPermissions().add(uiPermission);
+    repository.save(model);
+  }
+
+  public void deleteUiPermission(String code) {
+    PermissionModel model = repository.get();
+    model.getUiPermissions().removeIf(item -> item.code().equals(code));
     repository.save(model);
   }
 
@@ -331,6 +348,9 @@ public class PermissionAdminService {
         .map(SystemEndpointModel::permission)
         .filter(permission -> permission != null && !permission.isBlank())
         .collect(Collectors.toCollection(LinkedHashSet::new));
+    Set<String> uiPermissionCodes = model.getUiPermissions().stream()
+        .map(UiPermissionModel::code)
+        .collect(Collectors.toCollection(LinkedHashSet::new));
     List<UsageIssue> issues = new ArrayList<>();
     for (String permission : permissions) {
       if (!endpointPermissions.contains(permission)) {
@@ -345,9 +365,28 @@ public class PermissionAdminService {
     Set<String> scanned = scanBackendEndpoints().stream()
         .map(candidate -> candidate.method() + " " + candidate.path())
         .collect(Collectors.toSet());
+    for (EndpointScanCandidate candidate : scanBackendEndpoints()) {
+      if (!candidate.exists() && !candidate.permission().isBlank()) {
+        issues.add(new UsageIssue("后端接口未维护", candidate.method() + " " + candidate.path(), candidate.permission()));
+      }
+      if (!candidate.exists() && candidate.permission().isBlank()) {
+        issues.add(new UsageIssue("后端接口未声明权限", candidate.method() + " " + candidate.path(), "缺少 @PreAuthorize UMA 权限声明"));
+      }
+    }
     for (SystemEndpointModel endpoint : model.getEndpoints()) {
       if (!scanned.contains(endpoint.method() + " " + endpoint.path())) {
         issues.add(new UsageIssue("未在后端扫描到", endpoint.method() + " " + endpoint.path(), endpoint.permission()));
+      }
+    }
+    Set<String> frontendRefs = frontendUiPermissionReferences();
+    for (String code : frontendRefs) {
+      if (!uiPermissionCodes.contains(code)) {
+        issues.add(new UsageIssue("前端 UI 权限未维护", code, "前端引用了未纳入模型的 UI 权限编码"));
+      }
+    }
+    for (UiPermissionModel uiPermission : model.getUiPermissions()) {
+      if (!frontendRefs.contains(uiPermission.code())) {
+        issues.add(new UsageIssue("UI 权限未被前端引用", uiPermission.code(), uiPermission.permission()));
       }
     }
     return issues;
@@ -458,6 +497,21 @@ public class PermissionAdminService {
     }
   }
 
+  private void validateUiPermissions(PermissionModel model) {
+    for (UiPermissionModel uiPermission : model.getUiPermissions()) {
+      validateUiPermission(model, uiPermission);
+    }
+  }
+
+  private void validateUiPermission(PermissionModel model, UiPermissionModel uiPermission) {
+    Set<String> permissionExpressions = model.getPermissions().stream()
+        .map(permission -> permission.resource() + "#" + permission.scope())
+        .collect(Collectors.toSet());
+    if (!permissionExpressions.contains(uiPermission.permission())) {
+      throw new IllegalArgumentException("UI Permission 绑定的权限不存在: " + uiPermission.code() + " -> " + uiPermission.permission());
+    }
+  }
+
   private String joinOrNone(List<String> values) {
     return values.isEmpty() ? "无" : String.join(", ", values);
   }
@@ -505,6 +559,26 @@ public class PermissionAdminService {
       return result;
     } catch (IOException e) {
       throw new IllegalStateException("Failed to scan backend permissions", e);
+    }
+  }
+
+  private Set<String> frontendUiPermissionReferences() {
+    Path frontendDir = Path.of("..", "..", "frontend", "src").normalize();
+    if (!Files.isDirectory(frontendDir)) {
+      return Set.of();
+    }
+    Pattern pattern = Pattern.compile("\"((?:menu|button|page)\\.[a-zA-Z0-9_.-]+)\"");
+    Set<String> refs = new LinkedHashSet<>();
+    try (var stream = Files.walk(frontendDir)) {
+      for (Path file : stream.filter(path -> path.toString().endsWith(".ts") || path.toString().endsWith(".vue")).toList()) {
+        Matcher matcher = pattern.matcher(Files.readString(file, StandardCharsets.UTF_8));
+        while (matcher.find()) {
+          refs.add(matcher.group(1));
+        }
+      }
+      return refs;
+    } catch (IOException e) {
+      throw new IllegalStateException("Failed to scan frontend UI permissions", e);
     }
   }
 

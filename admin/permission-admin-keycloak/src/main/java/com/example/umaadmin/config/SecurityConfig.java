@@ -25,7 +25,7 @@ public class SecurityConfig {
         .authorizeHttpRequests(auth -> auth
             .requestMatchers("/assets/**", "/favicon.ico", "/actuator/health").permitAll()
             .requestMatchers(HttpMethod.POST, "/roles/**", "/users/**").hasAnyRole("ADMIN", "USER_ADMIN")
-            .requestMatchers(HttpMethod.POST, "/resources/**", "/policies/**", "/permissions/**", "/endpoints/**").hasAnyRole("ADMIN", "POLICY_ADMIN")
+            .requestMatchers(HttpMethod.POST, "/resources/**", "/policies/**", "/permissions/**", "/endpoints/**", "/ui-permissions/**").hasAnyRole("ADMIN", "POLICY_ADMIN")
             .requestMatchers(HttpMethod.POST, "/analysis/import-scanned-endpoints", "/model-sync/import").hasAnyRole("ADMIN", "SYNC_ADMIN")
             .requestMatchers(HttpMethod.POST, "/model-sync/preview").authenticated()
             .anyRequest().authenticated()

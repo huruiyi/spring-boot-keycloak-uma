@@ -6,6 +6,7 @@ import com.example.umaadmin.model.PolicyModel;
 import com.example.umaadmin.model.RealmRoleModel;
 import com.example.umaadmin.model.SystemEndpointModel;
 import com.example.umaadmin.model.UmaResourceModel;
+import com.example.umaadmin.model.UiPermissionModel;
 import com.example.umaadmin.model.UserModel;
 import com.example.umaadmin.service.PermissionAdminService;
 import jakarta.validation.Valid;
@@ -340,6 +341,65 @@ public class AdminController {
     int generated = service.generateDefaultEndpoints();
     redirectAttributes.addFlashAttribute("message", "Generated " + generated + " default endpoint permissions");
     return "redirect:/endpoints";
+  }
+
+  @GetMapping("/ui-permissions")
+  public String uiPermissions(@RequestParam(required = false) String code, Model model) {
+    PermissionModel permissionModel = service.model();
+    UiPermissionForm form = new UiPermissionForm();
+    boolean editing = code != null && !code.isBlank();
+    if (editing) {
+      permissionModel.getUiPermissions().stream()
+          .filter(uiPermission -> uiPermission.code().equals(code))
+          .findFirst()
+          .ifPresent(uiPermission -> {
+            form.setCode(uiPermission.code());
+            form.setName(uiPermission.name());
+            form.setType(uiPermission.type());
+            form.setPage(uiPermission.page());
+            form.setPermission(uiPermission.permission());
+            form.setSort(uiPermission.sort());
+            form.setEnabled(uiPermission.enabled());
+          });
+    }
+    model.addAttribute("model", permissionModel);
+    model.addAttribute("form", form);
+    model.addAttribute("editing", editing);
+    return "ui-permissions";
+  }
+
+  @PostMapping("/ui-permissions")
+  public String addUiPermission(@Valid @ModelAttribute("form") UiPermissionForm form, BindingResult bindingResult, Model model, RedirectAttributes redirectAttributes) {
+    if (bindingResult.hasErrors()) {
+      model.addAttribute("model", service.model());
+      model.addAttribute("editing", form.getCode() != null && !form.getCode().isBlank());
+      return "ui-permissions";
+    }
+    try {
+      service.addUiPermission(new UiPermissionModel(
+          form.getCode(),
+          form.getName(),
+          form.getType(),
+          form.getPage(),
+          form.getPermission(),
+          form.getSort(),
+          form.isEnabled()
+      ));
+    } catch (IllegalArgumentException e) {
+      bindingResult.reject("uiPermission.invalid", e.getMessage());
+      model.addAttribute("model", service.model());
+      model.addAttribute("editing", form.getCode() != null && !form.getCode().isBlank());
+      return "ui-permissions";
+    }
+    redirectAttributes.addFlashAttribute("message", "UI 权限已保存");
+    return "redirect:/ui-permissions";
+  }
+
+  @PostMapping("/ui-permissions/delete")
+  public String deleteUiPermission(@RequestParam String code, RedirectAttributes redirectAttributes) {
+    service.deleteUiPermission(code);
+    redirectAttributes.addFlashAttribute("message", "UI 权限已删除");
+    return "redirect:/ui-permissions";
   }
 
   @GetMapping("/analysis")

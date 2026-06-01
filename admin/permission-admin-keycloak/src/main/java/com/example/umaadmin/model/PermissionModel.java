@@ -12,6 +12,7 @@ public class PermissionModel {
   private List<PolicyModel> policies = new ArrayList<>();
   private List<PermissionRuleModel> permissions = new ArrayList<>();
   private List<SystemEndpointModel> endpoints = new ArrayList<>();
+  private List<UiPermissionModel> uiPermissions = new ArrayList<>();
 
   public List<RealmRoleModel> getRealmRoles() {
     return realmRoles;
@@ -67,5 +68,13 @@ public class PermissionModel {
 
   public void setEndpoints(List<SystemEndpointModel> endpoints) {
     this.endpoints = endpoints;
+  }
+
+  public List<UiPermissionModel> getUiPermissions() {
+    return uiPermissions;
+  }
+
+  public void setUiPermissions(List<UiPermissionModel> uiPermissions) {
+    this.uiPermissions = uiPermissions;
   }
 }

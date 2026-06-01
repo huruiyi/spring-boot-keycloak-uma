@@ -7,6 +7,7 @@ import com.example.umaadmin.model.PolicyModel;
 import com.example.umaadmin.model.RealmRoleModel;
 import com.example.umaadmin.model.SystemEndpointModel;
 import com.example.umaadmin.model.UmaResourceModel;
+import com.example.umaadmin.model.UiPermissionModel;
 import com.example.umaadmin.model.UserModel;
 
 import java.util.List;
@@ -63,6 +64,14 @@ public final class PermissionModelFactory {
         new SystemEndpointModel("审批订单", "POST", "/api/orders/approve", "order#approve"),
         new SystemEndpointModel("查看系统配置", "GET", "/api/system/config", "system#view"),
         new SystemEndpointModel("保存系统配置", "POST", "/api/system/config", "system#edit")
+    ));
+    model.setUiPermissions(List.of(
+        new UiPermissionModel("menu.orders", "订单管理菜单", "menu", "orders", "order#view", 10, true),
+        new UiPermissionModel("button.orders.refresh", "刷新订单按钮", "button", "orders", "order#view", 20, true),
+        new UiPermissionModel("button.orders.create", "新建订单按钮", "button", "orders", "order#create", 30, true),
+        new UiPermissionModel("button.orders.approve", "审批订单按钮", "button", "orders", "order#approve", 40, true),
+        new UiPermissionModel("menu.system", "系统配置菜单", "menu", "system", "system#view", 50, true),
+        new UiPermissionModel("button.system.save", "保存系统配置按钮", "button", "system", "system#edit", 60, true)
     ));
     return model;
   }

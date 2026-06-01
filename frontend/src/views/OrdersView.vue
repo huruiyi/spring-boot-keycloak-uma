@@ -2,7 +2,7 @@
 import {onMounted, ref} from "vue";
 import {Check, CirclePlus, RefreshCw} from "lucide-vue-next";
 import {approveOrder, createOrder, listOrders, type Order} from "../services/orders";
-import {loadPermissionMap} from "../services/uma";
+import {loadUiPermissionMap} from "../services/uiPermissions";
 
 const orders = ref<Order[]>([]);
 const loading = ref(false);
@@ -10,6 +10,12 @@ const permissionLoading = ref(true);
 const message = ref("");
 const error = ref("");
 const permissions = ref<Record<string, boolean>>({});
+const orderUiPermissionCodes = [
+  "menu.orders",
+  "button.orders.refresh",
+  "button.orders.create",
+  "button.orders.approve"
+];
 
 async function run(action: () => Promise<unknown>, ok: string) {
   error.value = "";
@@ -18,7 +24,7 @@ async function run(action: () => Promise<unknown>, ok: string) {
   try {
     await action();
     message.value = ok;
-    if (permissions.value["order#view"]) {
+    if (permissions.value["menu.orders"]) {
       const result = await listOrders();
       orders.value = result.data;
     }
@@ -30,7 +36,7 @@ async function run(action: () => Promise<unknown>, ok: string) {
 }
 
 async function load() {
-  if (!permissions.value["order#view"]) {
+  if (!permissions.value["menu.orders"]) {
     error.value = "当前用户没有订单查看权限";
     return;
   }
@@ -43,7 +49,7 @@ async function load() {
 
 onMounted(async () => {
   permissionLoading.value = true;
-  permissions.value = await loadPermissionMap(["order#view", "order#create", "order#approve"]);
+  permissions.value = await loadUiPermissionMap(orderUiPermissionCodes);
   permissionLoading.value = false;
   await load();
 });
@@ -56,12 +62,12 @@ onMounted(async () => {
       <span>菜单和按钮由 UMA RPT 探测结果控制，接口仍会二次校验。</span>
     </div>
     <div class="actions">
-      <button v-if="permissions['order#view']" class="button secondary" :disabled="loading || permissionLoading" @click="load">
+      <button v-if="permissions['button.orders.refresh']" class="button secondary" :disabled="loading || permissionLoading" @click="load">
         <RefreshCw :size="17"/>
         刷新
       </button>
       <button
-          v-if="permissions['order#create']"
+          v-if="permissions['button.orders.create']"
           class="button"
           :disabled="loading || permissionLoading"
           @click="run(createOrder, '订单已创建')"
@@ -70,7 +76,7 @@ onMounted(async () => {
         新建
       </button>
       <button
-          v-if="permissions['order#approve']"
+          v-if="permissions['button.orders.approve']"
           class="button success"
           :disabled="loading || permissionLoading"
           @click="run(approveOrder, '订单已审批')"
@@ -82,15 +88,16 @@ onMounted(async () => {
   </section>
 
   <section class="permission-strip">
-    <span :class="{ enabled: permissions['order#view'] }">order#view</span>
-    <span :class="{ enabled: permissions['order#create'] }">order#create</span>
-    <span :class="{ enabled: permissions['order#approve'] }">order#approve</span>
+    <span :class="{ enabled: permissions['menu.orders'] }">menu.orders</span>
+    <span :class="{ enabled: permissions['button.orders.refresh'] }">button.orders.refresh</span>
+    <span :class="{ enabled: permissions['button.orders.create'] }">button.orders.create</span>
+    <span :class="{ enabled: permissions['button.orders.approve'] }">button.orders.approve</span>
   </section>
 
   <p v-if="message" class="notice success-text">{{ message }}</p>
   <p v-if="error" class="notice error-text">{{ error }}</p>
 
-  <section v-if="permissions['order#view']" class="table-panel">
+  <section v-if="permissions['menu.orders']" class="table-panel">
     <table>
       <thead>
       <tr>

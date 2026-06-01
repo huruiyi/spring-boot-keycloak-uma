@@ -39,6 +39,31 @@ class OrderControllerSecurityTest {
   }
 
   @Test
+  void listOrdersAppliesDataPermissionByUserContext() throws Exception {
+    mockMvc.perform(get("/api/orders")
+            .with(jwt().jwt(jwt -> jwt
+                .subject("alice")
+                .claim("preferred_username", "alice")
+                .claim("department", "sales")
+                .claim("tenant", "default")
+                .claim("authorization", authorization("order", "view")))))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.data.length()").value(1))
+        .andExpect(jsonPath("$.data[0].id").value(1001));
+  }
+
+  @Test
+  void listOrdersAllowsManagerToSeeTenantOrders() throws Exception {
+    mockMvc.perform(get("/api/orders")
+            .with(jwt().jwt(jwt -> jwt
+                .claim("realm_access", Map.of("roles", List.of("manager")))
+                .claim("tenant", "default")
+                .claim("authorization", authorization("order", "view")))))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.data.length()").value(2));
+  }
+
+  @Test
   void requestTraceIdIsReturnedWhenProvided() throws Exception {
     mockMvc.perform(get("/api/orders")
             .header(RequestTraceFilter.TRACE_ID_HEADER, "test-trace-id")
@@ -83,6 +108,17 @@ class OrderControllerSecurityTest {
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.created").value(true))
         .andExpect(jsonPath("$.order.customer").value("New Customer"));
+  }
+
+  @Test
+  void approveOrderRejectsRptWhenDataConditionFails() throws Exception {
+    mockMvc.perform(post("/api/orders/approve")
+            .with(jwt().jwt(jwt -> jwt
+                .subject("other-user")
+                .claim("preferred_username", "other-user")
+                .claim("tenant", "default")
+                .claim("authorization", authorization("order", "approve")))))
+        .andExpect(status().isForbidden());
   }
 
   private Map<String, Object> authorization(String resource, String scope) {

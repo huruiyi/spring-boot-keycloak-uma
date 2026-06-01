@@ -7,6 +7,7 @@ import com.example.umaadmin.model.PolicyModel;
 import com.example.umaadmin.model.RealmRoleModel;
 import com.example.umaadmin.model.SystemEndpointModel;
 import com.example.umaadmin.model.UmaResourceModel;
+import com.example.umaadmin.model.UiPermissionModel;
 import com.example.umaadmin.model.UserModel;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -38,6 +39,7 @@ public class KeycloakPermissionModelRepository implements PermissionModelReposit
 
   private static final TypeReference<List<Map<String, Object>>> LIST_OF_MAPS = new TypeReference<>() {
   };
+  private static final String UI_PERMISSION_ATTRIBUTE = "uma.ui-permissions";
 
   private final ObjectMapper objectMapper;
   private final HttpClient httpClient;
@@ -92,6 +94,7 @@ public class KeycloakPermissionModelRepository implements PermissionModelReposit
     syncPolicies(previous, model, authzBase, token);
     syncPermissions(previous, model, authzBase, token);
     syncEndpoints(model, clientUuid, token);
+    syncUiPermissions(model, clientUuid, token);
     lastModel = loadFromKeycloak();
   }
 
@@ -139,6 +142,7 @@ public class KeycloakPermissionModelRepository implements PermissionModelReposit
     model.setPolicies(new ArrayList<>(loadPolicies(authzBase, token)));
     model.setPermissions(new ArrayList<>(loadPermissions(authzBase, token)));
     model.setEndpoints(new ArrayList<>(loadEndpoints(clientUuid, token)));
+    model.setUiPermissions(new ArrayList<>(loadUiPermissions(clientUuid, token)));
     return model;
   }
 
@@ -260,17 +264,26 @@ public class KeycloakPermissionModelRepository implements PermissionModelReposit
   }
 
   private List<SystemEndpointModel> loadEndpoints(String clientUuid, String token) {
+    return loadClientAttribute(clientUuid, token, endpointAttribute, new TypeReference<>() {
+    });
+  }
+
+  private List<UiPermissionModel> loadUiPermissions(String clientUuid, String token) {
+    return loadClientAttribute(clientUuid, token, UI_PERMISSION_ATTRIBUTE, new TypeReference<>() {
+    });
+  }
+
+  private <T> List<T> loadClientAttribute(String clientUuid, String token, String attributeName, TypeReference<List<T>> type) {
     Map<String, Object> client = getMap(adminBase() + "/clients/" + clientUuid, token);
     Map<String, Object> attributes = objectMap(client.get("attributes"));
-    String json = Objects.toString(attributes.get(endpointAttribute), "");
+    String json = Objects.toString(attributes.get(attributeName), "");
     if (json.isBlank()) {
       return List.of();
     }
     try {
-      return objectMapper.readValue(json, new TypeReference<>() {
-      });
+      return objectMapper.readValue(json, type);
     } catch (JsonProcessingException e) {
-      throw new IllegalStateException("Failed to parse endpoint attribute from Keycloak client: " + endpointAttribute, e);
+      throw new IllegalStateException("Failed to parse attribute from Keycloak client: " + attributeName, e);
     }
   }
 
@@ -480,12 +493,20 @@ public class KeycloakPermissionModelRepository implements PermissionModelReposit
   }
 
   private void syncEndpoints(PermissionModel model, String clientUuid, String token) {
+    syncClientJsonAttribute(clientUuid, token, endpointAttribute, model.getEndpoints(), "endpoint mappings");
+  }
+
+  private void syncUiPermissions(PermissionModel model, String clientUuid, String token) {
+    syncClientJsonAttribute(clientUuid, token, UI_PERMISSION_ATTRIBUTE, model.getUiPermissions(), "UI permission mappings");
+  }
+
+  private void syncClientJsonAttribute(String clientUuid, String token, String attributeName, Object value, String description) {
     Map<String, Object> client = getMap(adminBase() + "/clients/" + clientUuid, token);
     Map<String, Object> attributes = objectMap(client.get("attributes"));
     try {
-      attributes.put(endpointAttribute, objectMapper.writeValueAsString(model.getEndpoints()));
+      attributes.put(attributeName, objectMapper.writeValueAsString(value));
     } catch (JsonProcessingException e) {
-      throw new IllegalStateException("Failed to serialize endpoint mappings", e);
+      throw new IllegalStateException("Failed to serialize " + description, e);
     }
     client.put("attributes", attributes);
     put(adminBase() + "/clients/" + clientUuid, token, client);
