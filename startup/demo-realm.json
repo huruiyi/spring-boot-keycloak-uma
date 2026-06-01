@@ -14,11 +14,15 @@
       },
       {
         "name": "manager",
-        "description": "管理人员"
+        "description": "业务管理员"
       },
       {
         "name": "user",
         "description": "普通用户"
+      },
+      {
+        "name": "auditor",
+        "description": "审计人员"
       }
     ]
   },
@@ -26,6 +30,7 @@
     {
       "clientId": "demo-frontend",
       "name": "演示前端",
+      "description": "前端登录客户端，负责用户登录和按需申请 UMA RPT",
       "enabled": true,
       "protocol": "openid-connect",
       "publicClient": true,
@@ -54,6 +59,7 @@
     {
       "clientId": "demo-api",
       "name": "演示 API 资源服务器",
+      "description": "UMA 资源服务器，承载 Resource、Scope、Policy、Permission 并作为运行时授权执行源",
       "enabled": true,
       "protocol": "openid-connect",
       "publicClient": false,
@@ -69,7 +75,10 @@
         "email",
         "roles"
       ],
-      "optionalClientScopes": []
+      "optionalClientScopes": [],
+      "attributes": {
+        "uma.model-source": "keycloak"
+      }
     }
   ],
   "users": [
@@ -127,6 +136,25 @@
         }
       ],
       "realmRoles": [
+        "user"
+      ]
+    },
+    {
+      "username": "auditor",
+      "enabled": true,
+      "email": "auditor@example.com",
+      "firstName": "审计",
+      "lastName": "人员",
+      "emailVerified": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "auditor123",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "auditor",
         "user"
       ]
     }
