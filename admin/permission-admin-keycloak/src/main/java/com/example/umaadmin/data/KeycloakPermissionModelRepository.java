@@ -206,12 +206,15 @@ public class KeycloakPermissionModelRepository implements PermissionModelReposit
     Map<String, String> clientUuidToClientId = clientUuidToClientId(token);
     return getList(authzBase + "/policy", token).stream()
         .filter(policy -> List.of("role", "user", "client").contains(text(policy, "type")))
-        .map(policy -> new PolicyModel(
-            text(policy, "name"),
-            text(policy, "type"),
-            policySubject(policy, roleIdToName, userIdToName, clientUuidToClientId),
-            text(policy, "description")
-        ))
+        .map(policy -> {
+          Map<String, Object> detail = getMap(authzBase + "/policy/" + keycloakId(policy), token);
+          return new PolicyModel(
+              text(detail, "name"),
+              text(detail, "type"),
+              policySubject(detail, roleIdToName, userIdToName, clientUuidToClientId),
+              text(detail, "description")
+          );
+        })
         .toList();
   }
 

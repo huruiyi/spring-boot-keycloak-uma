@@ -7,49 +7,6 @@
   <link href="https://cdn.jsdelivr.net/npm/daisyui@5/themes.css" rel="stylesheet" type="text/css">
   <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
   <link rel="stylesheet" th:href="@{/assets/admin.css}">
+  <script th:src="@{/assets/theme.js}"></script>
 </head>
-<body>
-<div class="shell">
-  <aside th:replace="~{fragments :: sidebar}"></aside>
-  <main class="main">
-    <div class="page-title">
-      <h1>权限分析</h1>
-      <form th:action="@{/analysis/import-scanned-endpoints}" method="post">
-        <button class="button secondary" type="submit">导入后端扫描接口</button>
-      </form>
-    </div>
-    <p class="notice" th:if="${message}" th:text="${message}"></p>
-    <div class="split">
-      <section class="panel">
-        <h2>后端接口扫描</h2>
-        <table>
-          <thead><tr><th>方法</th><th>路径</th><th>权限</th><th>状态</th></tr></thead>
-          <tbody>
-          <tr th:each="candidate : ${scanCandidates}">
-            <td th:text="${candidate.method()}"></td>
-            <td th:text="${candidate.path()}"></td>
-            <td><span class="tag" th:if="${!candidate.permission().isBlank()}" th:text="${candidate.permission()}"></span></td>
-            <td><span class="tag" th:text="${candidate.exists()} ? '已维护' : '待导入'"></span></td>
-          </tr>
-          </tbody>
-        </table>
-      </section>
-      <section class="panel">
-        <h2>使用分析</h2>
-        <p class="muted" th:if="${usageIssues.isEmpty()}">没有发现使用问题。</p>
-        <table th:if="${!usageIssues.isEmpty()}">
-          <thead><tr><th>类型</th><th>对象</th><th>说明</th></tr></thead>
-          <tbody>
-          <tr th:each="issue : ${usageIssues}">
-            <td th:text="${issue.type()}"></td>
-            <td th:text="${issue.name()}"></td>
-            <td th:text="${issue.detail()}"></td>
-          </tr>
-          </tbody>
-        </table>
-      </section>
-    </div>
-  </main>
-</div>
-</body>
-</html>
+<body><div class="shell"><aside th:replace="~{fragments :: sidebar}"></aside><main class="main"><div class="page-title"><h1>权限分析</h1></div><p class="notice" th:if="${message}" th:text="${message}"></p><section class="panel"><h2>后端接口扫描</h2><form class="toolbar" th:action="@{/analysis/import-scanned-endpoints}" method="post"><button class="button secondary" type="submit">导入后端扫描接口</button></form><table><thead><tr><th>方法</th><th>路径</th><th>权限</th><th>状态</th></tr></thead><tbody><tr th:each="candidate : ${scanCandidates}"><td th:text="${candidate.method()}"></td><td th:text="${candidate.path()}"></td><td><span class="tag" th:text="${candidate.permission()}"></span></td><td th:text="${candidate.maintained()} ? '已维护' : '待导入'"></td></tr></tbody></table></section><section class="panel"><h2>使用分析</h2><p th:if="${#lists.isEmpty(usageIssues)}">暂无使用问题。</p><table th:if="${!#lists.isEmpty(usageIssues)}"><thead><tr><th>类型</th><th>名称</th><th>说明</th></tr></thead><tbody><tr th:each="issue : ${usageIssues}"><td th:text="${issue.type()}"></td><td th:text="${issue.name()}"></td><td th:text="${issue.message()}"></td></tr></tbody></table></section></main></div></body></html>

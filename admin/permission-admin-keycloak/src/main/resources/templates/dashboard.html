@@ -2,47 +2,11 @@
 <html lang="zh-CN" data-theme="corporate" xmlns:th="http://www.thymeleaf.org">
 <head>
   <meta charset="UTF-8">
-  <title>权限管理后台</title>
+  <title>权限模型概览</title>
   <link href="https://cdn.jsdelivr.net/npm/daisyui@5" rel="stylesheet" type="text/css">
   <link href="https://cdn.jsdelivr.net/npm/daisyui@5/themes.css" rel="stylesheet" type="text/css">
   <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
   <link rel="stylesheet" th:href="@{/assets/admin.css}">
+  <script th:src="@{/assets/theme.js}"></script>
 </head>
-<body>
-<div class="shell">
-  <aside th:replace="~{fragments :: sidebar}"></aside>
-  <main class="main">
-    <div class="page-title">
-      <h1>权限模型概览</h1>
-      <form th:action="@{/logout}" method="post">
-        <button class="button secondary" type="submit">退出</button>
-      </form>
-    </div>
-
-    <section class="grid">
-      <div class="metric"><strong th:text="${model.realmRoles.size()}">0</strong><span>Realm Role</span></div>
-      <div class="metric"><strong th:text="${model.users.size()}">0</strong><span>用户</span></div>
-      <div class="metric"><strong th:text="${model.resources.size()}">0</strong><span>UMA Resource</span></div>
-      <div class="metric"><strong th:text="${model.permissions.size()}">0</strong><span>Permission</span></div>
-    </section>
-
-    <section class="panel" style="margin-top:16px">
-      <h2>系统接口权限</h2>
-      <table>
-        <thead>
-        <tr><th>名称</th><th>方法</th><th>路径</th><th>权限</th></tr>
-        </thead>
-        <tbody>
-        <tr th:each="endpoint : ${model.endpoints}">
-          <td th:text="${endpoint.name()}"></td>
-          <td th:text="${endpoint.method()}"></td>
-          <td th:text="${endpoint.path()}"></td>
-          <td><span class="tag" th:text="${endpoint.permission()}"></span></td>
-        </tr>
-        </tbody>
-      </table>
-    </section>
-  </main>
-</div>
-</body>
-</html>
+<body><div class="shell"><aside th:replace="~{fragments :: sidebar}"></aside><main class="main"><div class="page-title"><h1>权限模型概览</h1></div><section class="stats-grid"><div class="stat-card"><small>领域角色</small><strong th:text="${#lists.size(model.realmRoles)}">0</strong></div><div class="stat-card"><small>用户</small><strong th:text="${#lists.size(model.users)}">0</strong></div><div class="stat-card"><small>资源</small><strong th:text="${#lists.size(model.resources)}">0</strong></div><div class="stat-card"><small>权限规则</small><strong th:text="${#lists.size(model.permissions)}">0</strong></div></section><section class="panel"><h2>系统接口权限</h2><table><thead><tr><th>名称</th><th>方法</th><th>路径</th><th>权限</th></tr></thead><tbody><tr th:each="endpoint : ${model.endpoints}"><td th:text="${endpoint.name()}"></td><td th:text="${endpoint.method()}"></td><td th:text="${endpoint.path()}"></td><td><span class="tag" th:text="${endpoint.permission()}"></span></td></tr></tbody></table></section></main></div></body></html>

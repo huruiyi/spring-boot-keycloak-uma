@@ -127,6 +127,34 @@ a {
   background: var(--color-primary, #4f46e5);
 }
 
+.theme-control {
+  display: grid;
+  gap: .4rem;
+  margin: 0 0 1rem;
+  padding: .75rem;
+  border: 1px solid var(--app-line);
+  border-radius: var(--radius-field, .75rem);
+  background: color-mix(in oklab, var(--color-base-200, #eef2ff), transparent 20%);
+}
+
+.theme-control.compact {
+  width: min(18rem, 100%);
+  margin: 1rem 0 0;
+}
+
+.theme-control label {
+  color: var(--app-muted);
+  font-size: .76rem;
+  font-weight: 850;
+}
+
+.theme-control select {
+  min-height: 2.35rem;
+  border-color: color-mix(in oklab, var(--color-primary, #4f46e5), transparent 72%);
+  background: var(--app-card);
+  font-weight: 750;
+}
+
 .main {
   min-width: 0;
   padding: .5rem .25rem 2.5rem;

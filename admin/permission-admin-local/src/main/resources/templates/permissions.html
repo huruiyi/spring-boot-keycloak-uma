@@ -2,107 +2,11 @@
 <html lang="zh-CN" data-theme="corporate" xmlns:th="http://www.thymeleaf.org">
 <head>
   <meta charset="UTF-8">
-  <title>Permission 维护</title>
+  <title>权限规则维护</title>
   <link href="https://cdn.jsdelivr.net/npm/daisyui@5" rel="stylesheet" type="text/css">
   <link href="https://cdn.jsdelivr.net/npm/daisyui@5/themes.css" rel="stylesheet" type="text/css">
   <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
   <link rel="stylesheet" th:href="@{/assets/admin.css}">
+  <script th:src="@{/assets/theme.js}"></script>
 </head>
-<body>
-<div class="shell">
-  <aside th:replace="~{fragments :: sidebar}"></aside>
-  <main class="main">
-    <div class="page-title"><h1>Permission 维护</h1></div>
-    <p class="notice" th:if="${message}" th:text="${message}"></p>
-    <div class="split">
-      <section class="panel">
-        <table>
-          <thead><tr><th>Permission</th><th>Resource</th><th>Scope</th><th>Policy</th><th>Decision Strategy</th><th>申请格式</th><th>操作</th></tr></thead>
-          <tbody>
-          <tr th:each="permission : ${model.permissions}">
-            <td th:text="${permission.name()}"></td>
-            <td th:text="${permission.resource()}"></td>
-            <td th:text="${permission.scope()}"></td>
-            <td><span class="tag" th:each="policy : ${permission.policies()}" th:text="${policy}"></span></td>
-            <td><span class="tag" th:text="${permission.decisionStrategy()}"></span></td>
-            <td><span class="tag" th:text="${permission.resource() + '#' + permission.scope()}"></span></td>
-            <td class="actions">
-              <a class="button secondary" th:href="@{/permissions(name=${permission.name()})}">编辑</a>
-              <form class="inline-form" th:action="@{/permissions/delete}" method="post"
-                    th:data-confirm-message="${permissionDeleteImpacts != null ? permissionDeleteImpacts[permission.name()] : '确认删除？'}"
-                    onsubmit="return confirm(this.dataset.confirmMessage)">
-                <input type="hidden" name="name" th:value="${permission.name()}">
-                <button class="button danger" type="submit">删除</button>
-              </form>
-            </td>
-          </tr>
-          </tbody>
-        </table>
-      </section>
-      <section class="panel">
-        <h2 th:text="${editing} ? '编辑 Permission' : '新增 Permission'">新增 Permission</h2>
-        <form class="form" th:action="@{/permissions}" th:object="${form}" method="post">
-          <div class="notice error" th:if="${#fields.hasAnyErrors()}">
-            <div th:each="err : ${#fields.errors('*')}" th:text="${err}"></div>
-          </div>
-          <div class="field"><label>名称</label><input th:field="*{name}" th:readonly="${editing}" placeholder="perm-report-view"></div>
-          <div class="field">
-            <label>Resource</label>
-            <select id="resource-select" th:field="*{resource}">
-              <option value="">请选择 Resource</option>
-              <option th:each="resource : ${model.resources}" th:value="${resource.name()}" th:text="${resource.name()}"></option>
-            </select>
-          </div>
-          <div class="field">
-            <label>Scope</label>
-            <select id="scope-select" th:field="*{scope}">
-              <option value="">请选择 Scope</option>
-              <optgroup th:each="resource : ${model.resources}" th:label="${resource.name()}">
-                <option th:each="scope : ${resource.scopes()}" th:value="${scope}" th:text="${scope}"></option>
-              </optgroup>
-            </select>
-          </div>
-          <div class="field">
-            <label>Policy</label>
-            <select class="multi-select" th:field="*{policies}" multiple>
-              <option th:each="policy : ${model.policies}" th:value="${policy.name()}" th:text="${policy.name()}"></option>
-            </select>
-          </div>
-          <div class="field">
-            <label>Decision Strategy</label>
-            <select th:field="*{decisionStrategy}">
-              <option value="AFFIRMATIVE">AFFIRMATIVE - 任意 Policy 满足</option>
-              <option value="UNANIMOUS">UNANIMOUS - 全部 Policy 满足</option>
-            </select>
-          </div>
-          <div class="actions">
-            <button class="button" type="submit">保存</button>
-            <a class="button secondary" th:if="${editing}" th:href="@{/permissions}">取消</a>
-          </div>
-        </form>
-      </section>
-    </div>
-  </main>
-</div>
-<script>
-  const resourceSelect = document.getElementById('resource-select');
-  const scopeSelect = document.getElementById('scope-select');
-  function filterScopes() {
-    const selectedResource = resourceSelect.value;
-    let selectedScopeVisible = false;
-    scopeSelect.querySelectorAll('optgroup').forEach(group => {
-      const visible = !selectedResource || group.label === selectedResource;
-      group.hidden = !visible;
-      if (visible && [...group.children].some(option => option.selected)) {
-        selectedScopeVisible = true;
-      }
-    });
-    if (!selectedScopeVisible) {
-      scopeSelect.value = '';
-    }
-  }
-  resourceSelect.addEventListener('change', filterScopes);
-  filterScopes();
-</script>
-</body>
-</html>
+<body><div class="shell"><aside th:replace="~{fragments :: sidebar}"></aside><main class="main"><div class="page-title"><h1>权限规则维护</h1></div><p class="notice" th:if="${message}" th:text="${message}"></p><div class="split"><section class="panel"><table><thead><tr><th>权限规则</th><th>资源</th><th>动作范围</th><th>策略</th><th>决策方式</th><th>申请格式</th><th>操作</th></tr></thead><tbody><tr th:each="permission : ${model.permissions}"><td th:text="${permission.name()}"></td><td th:text="${permission.resource()}"></td><td th:text="${permission.scope()}"></td><td><span class="tag" th:each="policy : ${permission.policies()}" th:text="${policy}"></span></td><td th:text="${permission.decisionStrategy() == 'UNANIMOUS' ? '全部策略满足' : '任意策略满足'}"></td><td><span class="tag" th:text="${permission.resource() + '#' + permission.scope()}"></span></td><td class="actions"><a class="button secondary" th:href="@{/permissions(name=${permission.name()})}">编辑</a><form class="inline-form" th:action="@{/permissions/delete}" method="post" th:data-confirm-message="${permissionDeleteImpacts != null ? permissionDeleteImpacts[permission.name()] : '确认删除？'}" onsubmit="return confirm(this.dataset.confirmMessage)"><input type="hidden" name="name" th:value="${permission.name()}"><button class="button danger" type="submit">删除</button></form></td></tr></tbody></table></section><section class="panel"><h2 th:text="${editing} ? '编辑权限规则' : '新增权限规则'">新增权限规则</h2><form class="form" th:action="@{/permissions}" th:object="${form}" method="post"><div class="field"><label>权限规则名</label><input th:field="*{name}" th:readonly="${editing}" placeholder="perm-report-view"></div><div class="field"><label>资源</label><select th:field="*{resource}" data-resource-select><option value="">请选择资源</option><option th:each="resource : ${model.resources}" th:value="${resource.name()}" th:text="${resource.name()}" th:data-scopes="${#strings.listJoin(resource.scopes(), ',')}"></option></select></div><div class="field"><label>动作范围</label><select th:field="*{scope}" data-scope-select th:data-current-scope="${form.scope}"><option value="">请选择动作范围</option></select></div><div class="field"><label>策略</label><select class="multi-select" th:field="*{policies}" multiple><option th:each="policy : ${model.policies}" th:value="${policy.name()}" th:text="${policy.name()}"></option></select></div><div class="field"><label>决策方式</label><select th:field="*{decisionStrategy}"><option value="AFFIRMATIVE">任意策略满足</option><option value="UNANIMOUS">全部策略满足</option></select></div><div class="actions"><button class="button" type="submit">保存</button><a class="button secondary" th:if="${editing}" th:href="@{/permissions}">取消</a></div></form></section></div><script>function filterScopes(){var resource=document.querySelector('[data-resource-select]');var scope=document.querySelector('[data-scope-select]');if(!resource||!scope)return;var selected=resource.options[resource.selectedIndex];var scopes=(selected&&selected.dataset.scopes?selected.dataset.scopes:'').split(',').filter(Boolean);var current=scope.value||scope.dataset.currentScope||'';scope.innerHTML='<option value="">请选择动作范围</option>';scopes.forEach(function(item){var option=document.createElement('option');option.value=item;option.textContent=item;if(item===current)option.selected=true;scope.appendChild(option);});if(!scopes.includes(current))scope.value='';scope.dataset.currentScope='';}document.addEventListener('DOMContentLoaded',function(){filterScopes();var resource=document.querySelector('[data-resource-select]');if(resource)resource.addEventListener('change',function(){var scope=document.querySelector('[data-scope-select]');if(scope)scope.dataset.currentScope='';filterScopes();});});</script></main></div></body></html>

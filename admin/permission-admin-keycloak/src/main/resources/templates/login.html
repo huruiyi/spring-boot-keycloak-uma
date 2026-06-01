@@ -7,39 +7,6 @@
   <link href="https://cdn.jsdelivr.net/npm/daisyui@5/themes.css" rel="stylesheet" type="text/css">
   <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
   <link rel="stylesheet" th:href="@{/assets/admin.css}">
+  <script th:src="@{/assets/theme.js}"></script>
 </head>
-<body>
-<main class="login-page">
-  <section class="login-card">
-    <div class="login-hero">
-      <div class="brand">
-        <span class="brand-mark">权</span>
-        <span>
-          <strong>权限管理后台</strong>
-          <small>UMA Authorization</small>
-        </span>
-      </div>
-      <h1>集中维护身份、策略和接口权限</h1>
-      <p>统一管理 Realm Role、用户、UMA Resource、Policy、Permission 和系统接口权限映射。</p>
-    </div>
-    <div class="login-form-card">
-      <h2>登录</h2>
-      <p class="notice error" th:if="${param.error}">用户名或密码错误。</p>
-      <p class="notice" th:if="${param.logout}">已退出登录。</p>
-      <form class="form" th:action="@{/login}" method="post">
-        <input th:if="${_csrf}" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
-        <div class="field">
-          <label for="username">用户名</label>
-          <input id="username" name="username" autocomplete="username" required autofocus placeholder="admin">
-        </div>
-        <div class="field">
-          <label for="password">密码</label>
-          <input id="password" name="password" type="password" autocomplete="current-password" required placeholder="请输入密码">
-        </div>
-        <button class="button" type="submit">登录</button>
-      </form>
-    </div>
-  </section>
-</main>
-</body>
-</html>
+<body><main class="login-page"><section class="login-card"><div class="login-hero"><div class="brand"><span class="brand-mark">权</span><span><strong>权限管理后台</strong><small>统一授权管理</small></span></div><div class="theme-control compact"><label for="login-theme-select">主题</label><select id="login-theme-select" data-theme-select><option value="corporate">企业</option><option value="light">浅色</option><option value="dark">深色</option><option value="cupcake">柔和</option><option value="emerald">翠绿</option><option value="winter">冬日</option><option value="business">商务</option><option value="night">夜间</option><option value="dracula">暗紫</option></select></div><h1>集中维护身份、策略和接口权限</h1><p>统一管理领域角色、用户、资源、策略、权限规则和系统接口权限映射。</p></div><div class="login-form-card"><h2>登录</h2><p class="notice error" th:if="${param.error}">用户名或密码错误。</p><p class="notice" th:if="${param.logout}">已退出登录。</p><form class="form" th:action="@{/login}" method="post"><input th:if="${_csrf}" type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"><div class="field"><label for="username">用户名</label><input id="username" name="username" autocomplete="username" required autofocus placeholder="admin"></div><div class="field"><label for="password">密码</label><input id="password" name="password" type="password" autocomplete="current-password" required placeholder="请输入密码"></div><button class="button" type="submit">登录</button></form></div></section></main></body></html>
