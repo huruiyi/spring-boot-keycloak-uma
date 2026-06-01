@@ -13,43 +13,96 @@
 <div class="shell">
   <aside th:replace="~{fragments :: sidebar}"></aside>
   <main class="main">
-    <div class="page-title"><h1>UI 权限维护</h1></div>
+    <div class="page-title">
+      <h1>UI 权限维护</h1>
+    </div>
+
     <p class="notice" th:if="${message}" th:text="${message}"></p>
-    <div class="split">
+
+    <div class="management-layout">
       <section class="panel">
-        <table>
-          <thead><tr><th>编码</th><th>名称</th><th>类型</th><th>页面</th><th>绑定权限</th><th>排序</th><th>状态</th><th>操作</th></tr></thead>
-          <tbody>
-          <tr th:each="item : ${model.uiPermissions}">
-            <td th:text="${item.code()}"></td>
-            <td th:text="${item.name()}"></td>
-            <td th:text="${item.type()}"></td>
-            <td th:text="${item.page()}"></td>
-            <td><span class="tag" th:text="${item.permission()}"></span></td>
-            <td th:text="${item.sort()}"></td>
-            <td th:text="${item.enabled()} ? '启用' : '停用'"></td>
-            <td class="actions">
-              <a class="button secondary" th:href="@{/ui-permissions(code=${item.code()})}">编辑</a>
-              <form class="inline-form" th:action="@{/ui-permissions/delete}" method="post" onsubmit="return confirm('确认删除 UI 权限？')">
-                <input type="hidden" name="code" th:value="${item.code()}">
-                <button class="button danger" type="submit">删除</button>
-              </form>
-            </td>
-          </tr>
-          </tbody>
-        </table>
+        <div class="table-scroll">
+          <table class="maintenance-table ui-permission-table">
+            <thead>
+            <tr>
+              <th>编码</th>
+              <th>名称</th>
+              <th>类型</th>
+              <th>页面</th>
+              <th>绑定权限</th>
+              <th>排序</th>
+              <th>状态</th>
+              <th>操作</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="item : ${model.uiPermissions}">
+              <td th:text="${item.code()}"></td>
+              <td th:text="${item.name()}"></td>
+              <td th:text="${item.type()}"></td>
+              <td th:text="${item.page()}"></td>
+              <td><span class="tag" th:text="${item.permission()}"></span></td>
+              <td th:text="${item.sort()}"></td>
+              <td th:text="${item.enabled()} ? '启用' : '停用'"></td>
+              <td>
+                <div class="actions nowrap">
+                  <a class="button secondary" th:href="@{/ui-permissions(code=${item.code()})}">编辑</a>
+                  <form class="inline-form" th:action="@{/ui-permissions/delete}" method="post" onsubmit="return confirm('确认删除 UI 权限？')">
+                    <input type="hidden" name="code" th:value="${item.code()}">
+                    <button class="button danger" type="submit">删除</button>
+                  </form>
+                </div>
+              </td>
+            </tr>
+            </tbody>
+          </table>
+        </div>
       </section>
-      <section class="panel">
+
+      <section class="panel side-form">
         <h2 th:text="${editing} ? '编辑 UI 权限' : '新增 UI 权限'">新增 UI 权限</h2>
         <form class="form" th:action="@{/ui-permissions}" th:object="${form}" method="post">
-          <div class="field"><label>编码</label><input th:field="*{code}" th:readonly="${editing}" placeholder="button.orders.create"></div>
-          <div class="field"><label>名称</label><input th:field="*{name}" placeholder="新建订单按钮"></div>
-          <div class="field"><label>类型</label><select th:field="*{type}"><option value="menu">菜单</option><option value="page">页面</option><option value="button">按钮</option></select></div>
-          <div class="field"><label>所属页面</label><input th:field="*{page}" placeholder="orders"></div>
-          <div class="field"><label>绑定权限</label><select th:field="*{permission}"><option value="">请选择权限</option><option th:each="permission : ${model.permissions}" th:value="${permission.resource() + '#' + permission.scope()}" th:text="${permission.resource() + '#' + permission.scope()}"></option></select></div>
-          <div class="field"><label>排序</label><input type="number" th:field="*{sort}" min="0"></div>
-          <div class="field checkbox-field"><label><input type="checkbox" th:field="*{enabled}"> 启用</label></div>
-          <div class="actions"><button class="button" type="submit">保存</button><a class="button secondary" th:if="${editing}" th:href="@{/ui-permissions}">取消</a></div>
+          <div class="field">
+            <label>编码</label>
+            <input th:field="*{code}" th:readonly="${editing}" placeholder="button.orders.create">
+          </div>
+          <div class="field">
+            <label>名称</label>
+            <input th:field="*{name}" placeholder="新建订单按钮">
+          </div>
+          <div class="field">
+            <label>类型</label>
+            <select th:field="*{type}">
+              <option value="menu">菜单</option>
+              <option value="page">页面</option>
+              <option value="button">按钮</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>所属页面</label>
+            <input th:field="*{page}" placeholder="orders">
+          </div>
+          <div class="field">
+            <label>绑定权限</label>
+            <select th:field="*{permission}">
+              <option value="">请选择权限</option>
+              <option th:each="permission : ${model.permissions}"
+                      th:value="${permission.resource() + '#' + permission.scope()}"
+                      th:text="${permission.resource() + '#' + permission.scope()}"></option>
+            </select>
+          </div>
+          <div class="field">
+            <label>排序</label>
+            <input type="number" th:field="*{sort}" min="0">
+          </div>
+          <label class="checkbox-field">
+            <input type="checkbox" th:field="*{enabled}">
+            <span>启用</span>
+          </label>
+          <div class="actions">
+            <button class="button" type="submit">保存</button>
+            <a class="button secondary" th:if="${editing}" th:href="@{/ui-permissions}">取消</a>
+          </div>
         </form>
       </section>
     </div>

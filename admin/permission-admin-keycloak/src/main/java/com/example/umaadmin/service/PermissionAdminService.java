@@ -299,7 +299,7 @@ public class PermissionAdminService {
         .collect(Collectors.toCollection(LinkedHashSet::new));
     Map<String, String> permissions = backendPermissionExpressions();
     List<EndpointScanCandidate> candidates = new ArrayList<>();
-    Path apiDir = Path.of("..", "..", "backend", "src", "main", "java", "com", "example", "uma", "api").normalize();
+    Path apiDir = projectPath("backend", "src", "main", "java", "com", "example", "uma", "api");
     if (!Files.isDirectory(apiDir)) {
       return List.of();
     }
@@ -526,7 +526,7 @@ public class PermissionAdminService {
   }
 
   private Map<String, String> backendPermissionExpressions() {
-    Path file = Path.of("..", "..", "backend", "src", "main", "java", "com", "example", "uma", "security", "UmaPermissions.java").normalize();
+    Path file = projectPath("backend", "src", "main", "java", "com", "example", "uma", "security", "UmaPermissions.java");
     if (!Files.exists(file)) {
       return Map.of();
     }
@@ -553,7 +553,7 @@ public class PermissionAdminService {
   }
 
   private Set<String> frontendUiPermissionReferences() {
-    Path frontendDir = Path.of("..", "..", "frontend", "src").normalize();
+    Path frontendDir = projectPath("frontend", "src");
     if (!Files.isDirectory(frontendDir)) {
       return Set.of();
     }
@@ -587,6 +587,22 @@ public class PermissionAdminService {
       }
     }
     return "";
+  }
+
+  private Path projectPath(String first, String... more) {
+    return projectRoot().resolve(Path.of(first, more)).normalize();
+  }
+
+  private Path projectRoot() {
+    Path current = Path.of("").toAbsolutePath().normalize();
+    for (Path candidate = current; candidate != null; candidate = candidate.getParent()) {
+      if (Files.isDirectory(candidate.resolve("backend"))
+          && Files.isDirectory(candidate.resolve("frontend"))
+          && Files.isDirectory(candidate.resolve("admin"))) {
+        return candidate;
+      }
+    }
+    return current;
   }
 
   private String firstMatch(String source, String regex, String fallback) {

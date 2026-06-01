@@ -94,6 +94,15 @@ class PermissionAdminServiceTest {
     assertThat(repository.saved).isFalse();
   }
 
+  @Test
+  void scanBackendEndpointsFindsControllersFromCurrentWorkingDirectory() {
+    PermissionAdminService service = new PermissionAdminService(new InMemoryRepository(new PermissionModel()));
+
+    assertThat(service.scanBackendEndpoints())
+        .extracting(candidate -> candidate.method() + " " + candidate.path() + " " + candidate.permission())
+        .contains("GET /api/orders order#view", "POST /api/orders/approve order#approve");
+  }
+
   private static class InMemoryRepository implements PermissionModelRepository {
 
     private final PermissionModel model;
